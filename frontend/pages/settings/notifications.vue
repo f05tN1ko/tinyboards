@@ -2,7 +2,8 @@
 import { useGraphQL } from '~/composables/useGraphQL'
 
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Notifications Settings' })
+const { t } = useI18n()
+useHead({ title: () => t('settings.notifications.title') })
 
 const GET_SETTINGS_QUERY = `
   query GetNotificationSettings {
@@ -49,14 +50,14 @@ const saving = ref(false)
 const success = ref(false)
 
 const toggles = [
-  { key: 'emailEnabled', label: 'Email notifications' },
-  { key: 'commentRepliesEnabled', label: 'Comment replies' },
-  { key: 'postRepliesEnabled', label: 'Post replies' },
-  { key: 'mentionsEnabled', label: 'Mentions' },
-  { key: 'privateMessagesEnabled', label: 'Private messages' },
-  { key: 'boardInvitesEnabled', label: 'Board invites' },
-  { key: 'moderatorActionsEnabled', label: 'Moderator actions' },
-  { key: 'systemNotificationsEnabled', label: 'System notifications' },
+  { key: 'emailEnabled', labelKey: 'settings.notifications.emailEnabled' },
+  { key: 'commentRepliesEnabled', labelKey: 'settings.notifications.commentReplies' },
+  { key: 'postRepliesEnabled', labelKey: 'settings.notifications.postReplies' },
+  { key: 'mentionsEnabled', labelKey: 'settings.notifications.mentions' },
+  { key: 'privateMessagesEnabled', labelKey: 'settings.notifications.privateMessages' },
+  { key: 'boardInvitesEnabled', labelKey: 'settings.notifications.boardInvites' },
+  { key: 'moderatorActionsEnabled', labelKey: 'settings.notifications.moderatorActions' },
+  { key: 'systemNotificationsEnabled', labelKey: 'settings.notifications.systemNotifications' },
 ] as const
 
 async function fetchSettings (): Promise<void> {
@@ -90,7 +91,7 @@ await fetchSettings()
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Notifications
+      {{ $t('settings.notifications.heading') }}
     </h2>
 
     <CommonErrorDisplay v-if="error" :message="error.message" @retry="fetchSettings" />
@@ -103,14 +104,14 @@ await fetchSettings()
         class="flex items-center gap-2"
       >
         <input v-model="(settings as any)[toggle.key]" type="checkbox" class="form-checkbox" />
-        <span class="text-sm text-gray-700">{{ toggle.label }}</span>
+        <span class="text-sm text-gray-700">{{ $t(toggle.labelKey) }}</span>
       </label>
 
       <div class="flex items-center gap-3 pt-2">
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save' }}
+          {{ saving ? $t('settings.notifications.saving') : $t('settings.notifications.save') }}
         </button>
-        <span v-if="success" class="text-sm text-green-600">Saved successfully.</span>
+        <span v-if="success" class="text-sm text-green-600">{{ $t('settings.notifications.saveSuccess') }}</span>
       </div>
     </form>
   </div>

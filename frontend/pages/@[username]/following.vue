@@ -3,6 +3,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useGraphQL } from '~/composables/useGraphQL'
 import type { User } from '~/types/generated'
 
+const { t } = useI18n()
+
 definePageMeta({ middleware: 'guards' })
 
 const route = useRoute()
@@ -52,7 +54,7 @@ if (isOwnProfile.value && profileUser?.value?.id) {
   <div>
     <template v-if="isOwnProfile">
       <div class="bg-white rounded-lg border border-gray-200 px-4 py-2.5 mb-4">
-        <h2 class="text-sm font-semibold text-gray-900">Following</h2>
+        <h2 class="text-sm font-semibold text-gray-900">{{ $t('profile.tabs.following') }}</h2>
       </div>
 
       <CommonErrorDisplay v-if="error" :message="error.message" @retry="fetchFollowing" />
@@ -78,7 +80,7 @@ if (isOwnProfile.value && profileUser?.value?.id) {
             <p v-if="user.bio" class="text-xs text-gray-400 truncate mt-0.5">{{ user.bio }}</p>
           </div>
           <div class="text-right text-xs text-gray-400 shrink-0">
-            <span>{{ user.postCount ?? 0 }} posts</span>
+            <span>{{ t('profile.postsCount', { count: user.postCount ?? 0 }) }}</span>
           </div>
         </NuxtLink>
       </div>
@@ -89,14 +91,14 @@ if (isOwnProfile.value && profileUser?.value?.id) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-600 mb-1">Not following anyone yet</p>
-        <p class="text-xs text-gray-400">Follow users to see their content on your home feed.</p>
+        <p class="text-sm font-medium text-gray-600 mb-1">{{ $t('profile.notFollowing') }}</p>
+        <p class="text-xs text-gray-400">{{ $t('profile.notFollowingHint') }}</p>
       </div>
     </template>
     <CommonErrorDisplay
       v-else
-      title="Not available"
-      message="You can only view your own following list."
+      :title="$t('profile.notAvailable')"
+      :message="$t('profile.ownFollowingOnly')"
       :retryable="false"
     />
   </div>

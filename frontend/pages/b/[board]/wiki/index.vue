@@ -4,8 +4,9 @@ import { useGraphQL } from '~/composables/useGraphQL'
 
 const route = useRoute()
 const boardName = route.params.board as string
+const { t } = useI18n()
 
-useHead({ title: `Wiki - b/${boardName}` })
+useHead({ title: () => t('board.wiki.indexTitle', { board: boardName }) })
 
 const { pages, loadingPages, fetchPages } = useWiki()
 const boardId = ref<string | null>(null)
@@ -57,16 +58,16 @@ function formatDate (dateStr: string): string {
         <nav class="text-sm text-gray-500 mb-1">
           <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
           <span class="mx-1">/</span>
-          <span>Wiki</span>
+          <span>{{ $t('board.wiki.breadcrumbWiki') }}</span>
         </nav>
-        <h1 class="text-lg font-semibold text-gray-900">Wiki</h1>
+        <h1 class="text-lg font-semibold text-gray-900">{{ $t('board.wiki.breadcrumbWiki') }}</h1>
       </div>
       <NuxtLink
         v-if="isMod"
         :to="`/b/${boardName}/wiki/new`"
         class="button primary button-sm"
       >
-        Create page
+        {{ $t('board.wiki.createButton') }}
       </NuxtLink>
     </div>
 
@@ -90,13 +91,13 @@ function formatDate (dateStr: string): string {
 
     <div v-else class="text-center py-12">
       <template v-if="isMod">
-        <p class="text-sm text-gray-500 mb-4">No wiki pages yet.</p>
+        <p class="text-sm text-gray-500 mb-4">{{ $t('board.wiki.noPages') }}</p>
         <NuxtLink :to="`/b/${boardName}/wiki/new`" class="button primary">
-          Create the first wiki page
+          {{ $t('board.wiki.createFirst') }}
         </NuxtLink>
       </template>
       <p v-else class="text-sm text-gray-500">
-        This board doesn't have a wiki yet.
+        {{ $t('board.wiki.noWiki') }}
       </p>
     </div>
   </div>

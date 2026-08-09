@@ -8,8 +8,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `New Wiki Page - b/${boardName}` })
+useHead({ title: () => t('board.wiki.newPageTitle', { board: boardName }) })
 
 const boardId = ref<string | null>(null)
 const isMod = ref(false)
@@ -71,10 +72,10 @@ async function handleSubmit () {
   saving.value = false
 
   if (result) {
-    toast.success('Wiki page created')
+    toast.success(t('board.wiki.created'))
     await navigateTo(`/b/${boardName}/wiki/${result.slug}`)
   } else {
-    toast.error('Failed to create wiki page')
+    toast.error(t('board.wiki.createFailed'))
   }
 }
 </script>
@@ -84,37 +85,37 @@ async function handleSubmit () {
     <nav class="text-sm text-gray-500 mb-4">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">Wiki</NuxtLink>
+      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">{{ $t('board.wiki.breadcrumbWiki') }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span>New Page</span>
+      <span>{{ $t('board.wiki.newPage') }}</span>
     </nav>
 
-    <h1 class="text-lg font-semibold text-gray-900 mb-6">Create Wiki Page</h1>
+    <h1 class="text-lg font-semibold text-gray-900 mb-6">{{ $t('board.wiki.createHeading') }}</h1>
 
     <form class="space-y-5 max-w-2xl" @submit.prevent="handleSubmit">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-        <input v-model="title" type="text" class="form-input w-full" placeholder="Page title" required />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.wiki.titleLabel') }}</label>
+        <input v-model="title" type="text" class="form-input w-full" :placeholder="$t('board.wiki.titlePlaceholder')" required />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-        <input v-model="slug" type="text" class="form-input w-full font-mono text-sm" placeholder="page-slug" required />
-        <p class="text-xs text-gray-500 mt-1">Auto-generated from title. Used in the URL.</p>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.wiki.slugLabel') }}</label>
+        <input v-model="slug" type="text" class="form-input w-full font-mono text-sm" :placeholder="$t('board.wiki.slugPlaceholder')" required />
+        <p class="text-xs text-gray-500 mt-1">{{ $t('board.wiki.slugHint') }}</p>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.wiki.contentLabel') }}</label>
         <ClientOnly>
-          <textarea v-model="body" rows="16" class="form-input w-full font-mono text-sm" placeholder="Write your wiki page content..." required />
+          <textarea v-model="body" rows="16" class="form-input w-full font-mono text-sm" :placeholder="$t('board.wiki.contentPlaceholder')" required />
         </ClientOnly>
       </div>
 
       <div class="flex gap-3">
         <button type="submit" class="button primary" :disabled="saving || !title.trim() || !body.trim()">
-          {{ saving ? 'Creating...' : 'Create Page' }}
+          {{ saving ? $t('board.wiki.creating') : $t('board.wiki.createButton') }}
         </button>
-        <NuxtLink :to="`/b/${boardName}/wiki`" class="button white">Cancel</NuxtLink>
+        <NuxtLink :to="`/b/${boardName}/wiki`" class="button white">{{ $t('common.cancel') }}</NuxtLink>
       </div>
     </form>
   </div>

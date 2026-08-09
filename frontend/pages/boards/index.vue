@@ -8,8 +8,9 @@ const authStore = useAuthStore()
 const siteStore = useSiteStore()
 const route = useRoute()
 const router = useRouter()
+const { t } = useI18n()
 
-useHead({ title: 'Boards' })
+useHead({ title: () => t('boards.title') })
 
 const LIST_BOARDS_QUERY = `
   query ListBoards($page: Int, $limit: Int, $sort: SortType, $searchTerm: String, $searchTitleAndDesc: Boolean) {
@@ -108,7 +109,7 @@ await fetchBoards()
 <template>
   <div class="max-w-4xl mx-auto px-4 py-4">
     <h1 class="text-lg font-semibold text-gray-900 mb-4">
-      Board Directory
+      {{ $t('boards.directory') }}
     </h1>
 
     <div class="mb-4 flex flex-col sm:flex-row gap-2">
@@ -117,10 +118,10 @@ await fetchBoards()
           v-model="searchTerm"
           type="search"
           class="form-input flex-1"
-          placeholder="Search boards..."
+          :placeholder="$t('boards.searchPlaceholder')"
         >
         <button type="submit" class="button button-sm primary">
-          Search
+          {{ $t('boards.search') }}
         </button>
       </form>
       <select
@@ -128,11 +129,11 @@ await fetchBoards()
         class="form-input w-auto"
         @change="sort = ($event.target as HTMLSelectElement).value; page = 1; fetchBoards()"
       >
-        <option value="hot">Hot</option>
-        <option value="new">New</option>
-        <option value="topDay">Top</option>
-        <option value="active">Active</option>
-        <option value="mostComments">Most Comments</option>
+        <option value="hot">{{ $t('boards.sort.hot') }}</option>
+        <option value="new">{{ $t('boards.sort.new') }}</option>
+        <option value="topDay">{{ $t('boards.sort.topDay') }}</option>
+        <option value="active">{{ $t('boards.sort.active') }}</option>
+        <option value="mostComments">{{ $t('boards.sort.mostComments') }}</option>
       </select>
     </div>
 
@@ -145,7 +146,7 @@ await fetchBoards()
           :class="modeFilter === 'all' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
           @click="setModeFilter('all')"
         >
-          All
+          {{ $t('boards.mode.all') }}
         </button>
         <button
           type="button"
@@ -153,7 +154,7 @@ await fetchBoards()
           :class="modeFilter === 'feed' ? 'bg-blue-100 text-blue-800 ring-1 ring-blue-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
           @click="setModeFilter('feed')"
         >
-          Feed
+          {{ $t('boards.mode.feed') }}
         </button>
         <button
           type="button"
@@ -161,7 +162,7 @@ await fetchBoards()
           :class="modeFilter === 'forum' ? 'bg-purple-100 text-purple-800 ring-1 ring-purple-300' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
           @click="setModeFilter('forum')"
         >
-          Forum
+          {{ $t('boards.mode.forum') }}
         </button>
       </div>
       <NuxtLink
@@ -169,7 +170,7 @@ await fetchBoards()
         to="/boards/create"
         class="button button-sm primary no-underline"
       >
-        Create Board
+        {{ $t('boards.createBoard') }}
       </NuxtLink>
     </div>
 
@@ -181,7 +182,7 @@ await fetchBoards()
       <div v-if="filteredBoards.length > 0" class="grid gap-3 sm:grid-cols-2">
         <BoardCard v-for="board in filteredBoards" :key="board.id" :board="board" />
       </div>
-      <p v-else class="text-sm text-gray-500 text-center py-8">No boards found.</p>
+      <p v-else class="text-sm text-gray-500 text-center py-8">{{ $t('boards.noBoards') }}</p>
     </template>
 
     <!-- Filtered to forum only: stacked list -->
@@ -189,7 +190,7 @@ await fetchBoards()
       <div v-if="filteredBoards.length > 0" class="space-y-2">
         <BoardCard v-for="board in filteredBoards" :key="board.id" :board="board" />
       </div>
-      <p v-else class="text-sm text-gray-500 text-center py-8">No boards found.</p>
+      <p v-else class="text-sm text-gray-500 text-center py-8">{{ $t('boards.noBoards') }}</p>
     </template>
 
     <!-- All: feed boards in grid, then forum boards in list -->
@@ -198,7 +199,7 @@ await fetchBoards()
         <template v-if="feedBoards.length > 0">
           <div v-if="forumBoards.length > 0" class="mb-3 flex items-center gap-2">
             <span class="text-xs font-semibold uppercase tracking-wider text-blue-700">
-              Feed Boards
+              {{ $t('boards.feedBoards') }}
             </span>
             <span class="text-xs text-gray-400">{{ feedBoards.length }}</span>
             <div class="flex-1 h-px bg-blue-100"></div>
@@ -213,7 +214,7 @@ await fetchBoards()
             class="mt-6 mb-3 flex items-center gap-2"
           >
             <span class="text-xs font-semibold uppercase tracking-wider text-purple-700">
-              Forum Boards
+              {{ $t('boards.forumBoards') }}
             </span>
             <span class="text-xs text-gray-400">{{ forumBoards.length }}</span>
             <div class="flex-1 h-px bg-purple-100"></div>
@@ -223,7 +224,7 @@ await fetchBoards()
           </div>
         </template>
       </template>
-      <p v-else class="text-sm text-gray-500 text-center py-8">No boards found.</p>
+      <p v-else class="text-sm text-gray-500 text-center py-8">{{ $t('boards.noBoards') }}</p>
     </template>
 
     <CommonPagination

@@ -1,11 +1,17 @@
 <script setup lang="ts">
-// Security settings have been consolidated into the Settings page.
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-navigateTo('/admin/settings', { replace: true, redirectCode: 301 })
+useHead({ title: () => t('admin.security.redirecting') })
+
+// Redirect to settings page
+onMounted(() => {
+  navigateTo('/admin/settings')
+})
 </script>
 
 <template>
   <div class="text-sm text-gray-500">
-    Redirecting to settings...
+    {{ $t('admin.security.redirecting') }}
   </div>
 </template>

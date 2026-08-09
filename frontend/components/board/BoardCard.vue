@@ -4,6 +4,8 @@ import type { Board } from '~/types/generated'
 defineProps<{
   board: Board & { mode?: string }
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -19,9 +21,9 @@ defineProps<{
       <p v-if="board.description" class="text-xs text-gray-500 truncate mt-0.5">{{ board.description }}</p>
     </div>
     <div class="hidden sm:flex items-center gap-4 text-xs text-gray-400 shrink-0">
-      <span title="Discussions">{{ board.posts ?? 0 }} threads</span>
-      <span title="Replies">{{ board.comments ?? 0 }} replies</span>
-      <span title="Members">{{ board.subscribers }} members</span>
+      <span :title="t('board.tabs.discussions')">{{ board.posts ?? 0 }} {{ t('board.card.threads') }}</span>
+      <span :title="t('board.forum.replies')">{{ board.comments ?? 0 }} {{ t('board.card.replies') }}</span>
+      <span :title="t('board.sidebar.members')">{{ board.subscribers ?? 0 }} {{ t('board.card.members') }}</span>
     </div>
   </NuxtLink>
 
@@ -42,7 +44,7 @@ defineProps<{
             {{ board.title }}
           </h3>
           <p class="text-xs text-gray-500">
-            b/{{ board.name }} &middot; {{ board.subscribers }} members
+            b/{{ board.name }} &middot; {{ t('sidebar.membersCount', { count: board.subscribers ?? 0 }) }}
           </p>
         </div>
       </div>

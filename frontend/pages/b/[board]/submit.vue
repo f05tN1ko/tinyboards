@@ -5,11 +5,12 @@ import { useBoard } from '~/composables/useBoard'
 import type { Post } from '~/types/generated'
 
 definePageMeta({ middleware: 'guards' })
+const { t } = useI18n()
 
 const route = useRoute()
 const boardName = route.params.board as string
 
-useHead({ title: `Create Post - ${boardName}` })
+useHead({ title: () => t('submit.createPostTitle', { board: boardName }) })
 
 const { board, fetchBoard } = useBoard()
 await fetchBoard(boardName)
@@ -80,6 +81,15 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
     await navigateTo(`/b/${boardName}/${post.id}/${post.slug || ''}`)
   }
 }
+
+const submitLabel = computed(() => {
+  if (loading.value || fileUploading.value) return t('submit.posting')
+  return board.value?.mode === 'forum' ? t('submit.startDiscussion') : t('submit.createPostHeading')
+})
+
+const heading = computed(() =>
+  board.value?.mode === 'forum' ? t('submit.newDiscussion') : t('submit.createPostHeading'),
+)
 </script>
 
 <template>
@@ -92,7 +102,7 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
         </svg>
-        Back to b/{{ boardName }}
+        {{ $t('submit.backTo', { board: boardName }) }}
       </NuxtLink>
     </div>
 
@@ -102,9 +112,9 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
         <h1 class="text-base font-semibold text-gray-900">
-          {{ board?.mode === 'forum' ? 'New Discussion' : 'Create Post' }}
+          {{ heading }}
         </h1>
-        <span class="text-xs text-gray-500 ml-auto">in b/{{ boardName }}</span>
+        <span class="text-xs text-gray-500 ml-auto">{{ $t('submit.inBoard', { board: boardName }) }}</span>
       </div>
 
       <div class="p-4">
@@ -113,7 +123,7 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
         <PostForm
           :board-name="boardName"
           :board-id="board?.id"
-          :submit-label="loading || fileUploading ? 'Posting...' : (board?.mode === 'forum' ? 'Start Discussion' : 'Create Post')"
+          :submit-label="submitLabel"
           @submit="handleSubmit"
         />
       </div>

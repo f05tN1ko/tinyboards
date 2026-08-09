@@ -2,8 +2,10 @@
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 import { useFileUpload } from '~/composables/useFileUpload'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Emojis' })
+useHead({ title: () => t('admin.emojis.title') })
 
 interface EmojiObject {
   id: string
@@ -80,7 +82,6 @@ function onFileSelected (event: Event) {
   if (!file) return
 
   selectedFile.value = file
-  // Generate preview
   const reader = new FileReader()
   reader.onload = (e) => {
     filePreview.value = e.target?.result as string
@@ -159,28 +160,28 @@ const formError = computed(() => createError.value || uploadError.value)
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Custom Emojis
+      {{ $t('admin.emojis.heading') }}
     </h2>
 
     <!-- Add emoji form -->
     <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6 max-w-lg">
       <h3 class="text-sm font-medium text-gray-900 mb-3">
-        Add New Emoji
+        {{ $t('admin.emojis.addNew') }}
       </h3>
       <form class="space-y-3" @submit.prevent="createEmoji">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Shortcode
+            {{ $t('admin.emojis.shortcode') }}
           </label>
           <input
             v-model="shortcode"
             type="text"
             class="form-input w-full"
-            placeholder="e.g. party_parrot"
+            :placeholder="$t('admin.emojis.shortcodePlaceholder')"
             pattern="[a-z0-9_]+"
           />
           <p class="mt-1 text-xs text-gray-500">
-            Lowercase letters, numbers, and underscores only.
+            {{ $t('admin.emojis.shortcodeHint') }}
           </p>
         </div>
 
@@ -194,7 +195,7 @@ const formError = computed(() => createError.value || uploadError.value)
               : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'"
             @click="inputMode = 'upload'"
           >
-            Upload File
+            {{ $t('admin.emojis.uploadFile') }}
           </button>
           <button
             type="button"
@@ -204,14 +205,14 @@ const formError = computed(() => createError.value || uploadError.value)
               : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'"
             @click="inputMode = 'url'"
           >
-            Image URL
+            {{ $t('admin.emojis.imageUrl') }}
           </button>
         </div>
 
         <!-- File upload -->
         <div v-if="inputMode === 'upload'">
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Emoji Image
+            {{ $t('admin.emojis.emojiImage') }}
           </label>
           <div class="flex items-center gap-3">
             <label
@@ -220,7 +221,7 @@ const formError = computed(() => createError.value || uploadError.value)
               <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              Choose file
+              {{ $t('admin.emojis.chooseFile') }}
               <input
                 ref="fileInput"
                 type="file"
@@ -233,7 +234,7 @@ const formError = computed(() => createError.value || uploadError.value)
               <img
                 v-if="filePreview"
                 :src="filePreview"
-                alt="Preview"
+                :alt="$t('admin.emojis.previewAlt')"
                 class="w-8 h-8 object-contain rounded border border-gray-200"
               />
               <span class="text-sm text-gray-600 truncate max-w-[150px]">{{ selectedFile.name }}</span>
@@ -249,14 +250,14 @@ const formError = computed(() => createError.value || uploadError.value)
             </div>
           </div>
           <p class="mt-1 text-xs text-gray-500">
-            PNG, GIF, WebP, or JPEG. Max 512x512 pixels.
+            {{ $t('admin.emojis.fileHint') }}
           </p>
         </div>
 
         <!-- URL input -->
         <div v-else>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Image URL
+            {{ $t('admin.emojis.imageUrl') }}
           </label>
           <input
             v-model="imageUrl"
@@ -265,7 +266,7 @@ const formError = computed(() => createError.value || uploadError.value)
             placeholder="https://example.com/emoji.png"
           />
           <p class="mt-1 text-xs text-gray-500">
-            URL to the emoji image (PNG, GIF, or WebP).
+            {{ $t('admin.emojis.urlHint') }}
           </p>
         </div>
 
@@ -276,21 +277,21 @@ const formError = computed(() => createError.value || uploadError.value)
           class="button primary"
           :disabled="formBusy || !formValid"
         >
-          {{ formBusy ? 'Adding...' : 'Add Emoji' }}
+          {{ formBusy ? $t('admin.emojis.adding') : $t('admin.emojis.addEmoji') }}
         </button>
       </form>
     </div>
 
     <!-- Emoji list -->
     <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-      Current Emojis
+      {{ $t('admin.emojis.currentEmojis') }}
     </h3>
 
     <CommonLoadingSpinner v-if="loading" />
     <CommonErrorDisplay v-else-if="error" :message="error.message" />
 
     <div v-else-if="emojis.length === 0" class="text-sm text-gray-500">
-      No custom emojis uploaded yet.
+      {{ $t('admin.emojis.none') }}
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -312,7 +313,7 @@ const formError = computed(() => createError.value || uploadError.value)
           :disabled="deleting"
           @click="deleteEmoji(emoji.id)"
         >
-          Delete
+          {{ $t('admin.emojis.delete') }}
         </button>
       </div>
     </div>

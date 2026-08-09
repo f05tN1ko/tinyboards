@@ -2,8 +2,10 @@
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 import { useToast } from '~/composables/useToast'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin', middleware: 'guards' })
-useHead({ title: 'Content Filtering' })
+useHead({ title: () => t('admin.filtering.title') })
 
 const toast = useToast()
 
@@ -61,9 +63,9 @@ async function saveFilters (): Promise<void> {
   })
 
   if (result) {
-    toast.success('Content filtering settings saved')
+    toast.success(t('admin.filtering.saveSuccess'))
   } else {
-    toast.error('Failed to save settings')
+    toast.error(t('admin.filtering.saveFailed'))
   }
   saving.value = false
 }
@@ -77,11 +79,13 @@ const domainCount = computed(() => {
   if (!form.bannedDomains.trim()) return 0
   return form.bannedDomains.split(',').filter(d => d.trim()).length
 })
+
+
 </script>
 
 <template>
   <div>
-    <h2 class="text-base font-semibold text-gray-900 mb-4">Content Filtering</h2>
+    <h2 class="text-base font-semibold text-gray-900 mb-4">{{ $t('admin.filtering.heading') }}</h2>
 
     <CommonLoadingSpinner v-if="loading" />
 
@@ -89,50 +93,54 @@ const domainCount = computed(() => {
       <!-- Word Filter -->
       <div class="bg-white border border-gray-200 rounded-lg p-5">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-medium text-gray-900">Word Filter</h3>
+          <h3 class="text-sm font-medium text-gray-900">{{ $t('admin.filtering.wordFilter') }}</h3>
           <label class="flex items-center gap-2">
             <input v-model="form.wordFilterEnabled" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Enabled</span>
+            <span class="text-sm text-gray-700">{{ $t('admin.filtering.enabled') }}</span>
           </label>
         </div>
         <p class="text-xs text-gray-500 mb-3">
-          Posts and comments containing these words will be automatically filtered. Separate words with commas.
+          {{ $t('admin.filtering.wordFilterHint') }}
         </p>
         <textarea
           v-model="form.filteredWords"
           :disabled="!form.wordFilterEnabled"
           class="form-input w-full font-mono text-sm"
           rows="4"
-          placeholder="word1, word2, phrase to filter, ..."
+          :placeholder="$t('admin.filtering.wordPlaceholder')"
         />
-        <p class="text-xs text-gray-400 mt-1">{{ wordCount }} word{{ wordCount === 1 ? '' : 's' }} configured</p>
+        <p class="text-xs text-gray-400 mt-1">
+          {{ t('admin.filtering.wordsConfigured', wordCount) }}
+        </p>
       </div>
 
       <!-- Link / Domain Filter -->
       <div class="bg-white border border-gray-200 rounded-lg p-5">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="text-sm font-medium text-gray-900">Domain Filter</h3>
+          <h3 class="text-sm font-medium text-gray-900">{{ $t('admin.filtering.domainFilter') }}</h3>
           <label class="flex items-center gap-2">
             <input v-model="form.linkFilterEnabled" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Enabled</span>
+            <span class="text-sm text-gray-700">{{ $t('admin.filtering.enabled') }}</span>
           </label>
         </div>
         <p class="text-xs text-gray-500 mb-3">
-          Links to these domains will be blocked in posts and comments. Separate domains with commas.
+          {{ $t('admin.filtering.domainFilterHint') }}
         </p>
         <textarea
           v-model="form.bannedDomains"
           :disabled="!form.linkFilterEnabled"
           class="form-input w-full font-mono text-sm"
           rows="4"
-          placeholder="spam-site.com, bad-domain.org, ..."
+          :placeholder="$t('admin.filtering.domainPlaceholder')"
         />
-        <p class="text-xs text-gray-400 mt-1">{{ domainCount }} domain{{ domainCount === 1 ? '' : 's' }} configured</p>
+        <p class="text-xs text-gray-400 mt-1">
+          {{ t('admin.filtering.domainsConfigured', domainCount) }}
+        </p>
       </div>
 
       <div>
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save Filtering Settings' }}
+          {{ saving ? $t('common.saving') : $t('admin.filtering.save') }}
         </button>
       </div>
     </form>

@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Content' })
+useHead({ title: () => t('admin.content.title') })
 
 interface Post {
   id: string
@@ -66,7 +68,7 @@ async function restorePost (id: string) {
 }
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -90,17 +92,17 @@ const posts = computed(() => data.value?.listPosts ?? [])
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Content Moderation
+      {{ $t('admin.content.heading') }}
     </h2>
     <p class="text-sm text-gray-500 mb-6">
-      Review and restore removed posts and comments.
+      {{ $t('admin.content.description') }}
     </p>
 
     <CommonLoadingSpinner v-if="loading" />
     <CommonErrorDisplay v-else-if="error" :message="error.message" />
 
     <div v-else-if="posts.length === 0" class="text-sm text-gray-500">
-      No removed content found.
+      {{ $t('admin.content.noRemovedContent') }}
     </div>
 
     <div v-else class="space-y-4">
@@ -119,7 +121,7 @@ const posts = computed(() => data.value?.listPosts ?? [])
             </p>
             <div class="mt-2 flex items-center gap-3 text-xs text-gray-500">
               <span>
-                by <span class="font-medium">{{ post.creator.name }}</span>
+                {{ $t('common.by') }} <span class="font-medium">{{ post.creator.name }}</span>
               </span>
               <span>{{ formatDate(post.createdAt) }}</span>
             </div>
@@ -129,7 +131,7 @@ const posts = computed(() => data.value?.listPosts ?? [])
             :disabled="restoring"
             @click="restorePost(post.id)"
           >
-            Restore
+            {{ $t('admin.content.restore') }}
           </button>
         </div>
       </div>

@@ -1,16 +1,10 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Create Flair' })
-
-const route = useRoute()
-const router = useRouter()
-
-interface FlairTemplate {
-  id: string
-  templateName: string
-}
+useHead({ title: () => t('admin.flairs.createTitle') })
 
 interface Board {
   id: string
@@ -18,68 +12,65 @@ interface Board {
   title: string
 }
 
-const { execute: fetchBoards, data: boardData } = useGraphQL<{ listBoards: Board[] }>()
-const { execute: executeCreate, loading: creating, error: createError } = useGraphQLMutation<{ createFlairTemplate: FlairTemplate }>()
+interface ListBoardsResponse {
+  listBoards: Board[]
+}
+
+const { execute: executeBoards, data: boardsData } = useGraphQL<ListBoardsResponse>()
+const { execute: executeCreate, loading: creating, error: createError } = useGraphQL()
+
+const route = useRoute()
 
 const selectedBoardId = ref((route.query.boardId as string) || '')
+const flairType = ref('Post')
 const templateName = ref('')
 const textDisplay = ref('')
-const flairType = ref('Post')
-const textColor = ref('#000000')
-const backgroundColor = ref('#e0e0e0')
-const isModOnly = ref(false)
+const textColor = ref('#1f2937')
+const backgroundColor = ref('#e5e7eb')
 
-const BOARDS_QUERY = `
-  query { listBoards(limit: 100) { id name title } }
-`
+const BOARDS_QUERY = `query { listBoards { id name title } }`
 
 const CREATE_FLAIR = `
-  mutation CreateFlairTemplate($input: CreateFlairTemplateInput!) {
-    createFlairTemplate(input: $input) { id templateName }
+  mutation CreateFlair($input: CreateFlairInput!) {
+    createFlair(input: $input) { id }
   }
 `
 
-async function createFlair () {
-  if (!selectedBoardId.value || !templateName.value.trim()) return
+const boards = computed(() => boardsData.value?.listBoards ?? [])
 
-  const result = await executeCreate(CREATE_FLAIR, {
+onMounted(async () => {
+  await executeBoards(BOARDS_QUERY)
+})
+
+async function createFlair () {
+  await executeCreate(CREATE_FLAIR, {
     variables: {
       input: {
         boardId: selectedBoardId.value,
         flairType: flairType.value,
-        templateName: templateName.value.trim(),
-        textDisplay: textDisplay.value.trim() || templateName.value.trim(),
+        templateName: templateName.value,
+        textDisplay: textDisplay.value || null,
         textColor: textColor.value,
         backgroundColor: backgroundColor.value,
-        isModOnly: isModOnly.value,
       },
     },
   })
-
-  if (result?.createFlairTemplate) {
-    await router.push(`/admin/flairs?boardId=${selectedBoardId.value}`)
-  }
+  await navigateTo('/admin/flairs')
 }
-
-onMounted(async () => {
-  await fetchBoards(BOARDS_QUERY)
-})
-
-const boards = computed(() => boardData.value?.listBoards ?? [])
 </script>
 
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Create Flair
+      {{ $t('admin.flairs.createTitle') }}
     </h2>
 
     <form class="space-y-4 max-w-lg" @submit.prevent="createFlair">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Board</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.board') }}</label>
         <select v-model="selectedBoardId" class="form-input w-full" required>
           <option value="" disabled>
-            Select a board...
+            {{ $t('admin.flairs.selectBoard') }}
           </option>
           <option v-for="board in boards" :key="board.id" :value="board.id">
             +{{ board.name }} ({{ board.title }})
@@ -88,47 +79,40 @@ const boards = computed(() => boardData.value?.listBoards ?? [])
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Flair Type</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.flairType') }}</label>
         <select v-model="flairType" class="form-input w-full">
-          <option value="Post">Post Flair</option>
-          <option value="User">User Flair</option>
+          <option value="Post">{{ $t('admin.flairs.postFlair') }}</option>
+          <option value="User">{{ $t('admin.flairs.userFlair') }}</option>
         </select>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-        <input v-model="templateName" type="text" class="form-input w-full" placeholder="e.g. Discussion" required />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.name') }}</label>
+        <input v-model="templateName" type="text" class="form-input w-full" :placeholder="$t('admin.flairs.namePlaceholder')" required />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Display Text</label>
-        <input v-model="textDisplay" type="text" class="form-input w-full" placeholder="Leave blank to use name" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.displayText') }}</label>
+        <input v-model="textDisplay" type="text" class="form-input w-full" :placeholder="$t('admin.flairs.displayTextPlaceholder')" />
       </div>
 
       <div class="flex gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.textColor') }}</label>
           <input v-model="textColor" type="color" class="h-10 w-16 p-1 border border-gray-300 rounded" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Background</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.backgroundColor') }}</label>
           <input v-model="backgroundColor" type="color" class="h-10 w-16 p-1 border border-gray-300 rounded" />
         </div>
         <div class="flex items-end">
           <span
             class="inline-flex items-center px-2.5 py-1 rounded text-xs font-medium"
-            :style="{ color: textColor, backgroundColor: backgroundColor }"
+            :style="{ color: textColor, backgroundColor }"
           >
-            {{ textDisplay || templateName || 'Preview' }}
+            {{ textDisplay || templateName || $t('admin.flairs.preview') }}
           </span>
         </div>
-      </div>
-
-      <div>
-        <label class="flex items-center gap-2">
-          <input v-model="isModOnly" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Mod-only flair</span>
-        </label>
       </div>
 
       <CommonErrorDisplay v-if="createError" :message="createError.message" />
@@ -139,10 +123,10 @@ const boards = computed(() => boardData.value?.listBoards ?? [])
           class="button primary"
           :disabled="creating || !selectedBoardId || !templateName.trim()"
         >
-          {{ creating ? 'Creating...' : 'Create Flair' }}
+          {{ creating ? $t('admin.flairs.creating') : $t('admin.flairs.create') }}
         </button>
         <NuxtLink to="/admin/flairs" class="button white">
-          Cancel
+          {{ $t('admin.flairs.cancel') }}
         </NuxtLink>
       </div>
     </form>

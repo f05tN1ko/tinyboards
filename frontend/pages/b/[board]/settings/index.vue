@@ -7,8 +7,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Settings - b/${boardName}` })
+useHead({ title: t('board.settings.general.heading') + ' - b/' + boardName })
 
 interface BoardData {
   id: string
@@ -157,7 +158,7 @@ async function saveSettings () {
 
   if (result?.updateBoardSettings) {
     originalMode.value = form.mode
-    toast.success('Board settings saved')
+    toast.success(t('board.settings.general.saved'))
   }
 }
 </script>
@@ -170,30 +171,30 @@ async function saveSettings () {
         :to="`/b/${boardName}/settings`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-blue-600 text-blue-600"
       >
-        General
+        {{ $t('board.settings.tabsGeneral') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/appearance`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        Appearance
+        {{ $t('board.settings.tabsAppearance') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/moderation`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        Moderation
+        {{ $t('board.settings.tabsModeration') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/emojis`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        Emojis
+        {{ $t('board.settings.tabsEmojis') }}
       </NuxtLink>
     </div>
 
     <h2 class="text-base font-semibold text-gray-900 mb-4">
-      Board Settings
+      {{ $t('board.settings.general.heading') }}
     </h2>
 
     <CommonLoadingSpinner v-if="loading" size="lg" />
@@ -201,52 +202,52 @@ async function saveSettings () {
 
     <form v-else class="space-y-5 max-w-2xl" @submit.prevent="saveSettings">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.general.displayName') }}</label>
         <input v-model="form.title" type="text" class="form-input w-full" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea v-model="form.description" rows="3" class="form-input w-full" placeholder="Short board description" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.description') }}</label>
+        <textarea v-model="form.description" rows="3" class="form-input w-full" :placeholder="$t('board.settings.general.descriptionPlaceholder')" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Sidebar (Markdown)</label>
-        <textarea v-model="form.sidebar" rows="6" class="form-input w-full font-mono text-sm" placeholder="Sidebar content in Markdown format" />
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.general.sidebarMarkdown') }}</label>
+        <textarea v-model="form.sidebar" rows="6" class="form-input w-full font-mono text-sm" :placeholder="$t('board.settings.general.sidebarPlaceholder')" />
       </div>
 
       <div class="space-y-3">
         <label class="flex items-center gap-2">
           <input v-model="form.isNsfw" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">NSFW Board</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.general.nsfwBoard') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
           <input v-model="form.postingRestrictedToMods" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Restrict posting to moderators only</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.general.restrictPosting') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
           <input v-model="form.isHidden" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Hidden (not shown in board directory)</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.general.hidden') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
           <input v-model="form.excludeFromAll" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Exclude from /all feed</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.general.excludeFromAll') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
           <input v-model="form.wikiEnabled" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Enable wiki</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.general.enableWiki') }}</span>
         </label>
       </div>
 
       <!-- Board Mode -->
       <div class="bg-white border border-gray-200 rounded-lg p-5">
-        <h3 class="text-sm font-medium text-gray-900 mb-2">Board Mode</h3>
+        <h3 class="text-sm font-medium text-gray-900 mb-2">{{ $t('board.settings.general.boardMode') }}</h3>
         <p class="text-xs text-gray-500 mb-3">
-          Controls the type of content this board accepts.
+          {{ $t('board.settings.general.modeDescription') }}
         </p>
         <div class="grid grid-cols-2 gap-3">
           <button
@@ -259,10 +260,10 @@ async function saveSettings () {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">📰</span>
-              <span class="font-semibold text-sm text-gray-900">Feed Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('board.settings.general.feedBoard') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Share links, images, and text posts. Members vote on content.
+              {{ $t('board.settings.general.feedBoardDesc') }}
             </p>
           </button>
           <button
@@ -275,10 +276,10 @@ async function saveSettings () {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">💬</span>
-              <span class="font-semibold text-sm text-gray-900">Forum Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('board.settings.general.forumBoard') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Threaded discussions. Great for Q&amp;A, support, or structured topics.
+              {{ $t('board.settings.general.forumBoardDesc') }}
             </p>
           </button>
         </div>
@@ -286,23 +287,23 @@ async function saveSettings () {
 
       <!-- Mode change confirmation dialog -->
       <div v-if="showModeChangeConfirm" class="bg-amber-50 border border-amber-200 rounded-lg p-4">
-        <h4 class="text-sm font-medium text-amber-800 mb-1">Change board mode?</h4>
+        <h4 class="text-sm font-medium text-amber-800 mb-1">{{ $t('board.settings.general.changeModeConfirm') }}</h4>
         <p class="text-xs text-amber-700 mb-3">
-          This board already has posts. Existing posts will not be affected &mdash; only new posts will follow the new mode.
+          {{ $t('board.settings.general.changeModeDesc') }}
         </p>
         <div class="flex gap-2">
           <button type="button" class="button button-sm primary" @click="confirmModeChange">
-            Confirm
+            {{ $t('board.settings.general.confirm') }}
           </button>
           <button type="button" class="button button-sm white" @click="cancelModeChange">
-            Cancel
+            {{ $t('board.settings.general.cancel') }}
           </button>
         </div>
       </div>
 
       <div>
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save Settings' }}
+          {{ saving ? $t('board.settings.general.saving') : $t('board.settings.general.saveSettings') }}
         </button>
       </div>
     </form>

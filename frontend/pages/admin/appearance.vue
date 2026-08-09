@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Appearance' })
+useHead({ title: () => t('admin.appearance.title') })
 
 interface AppearanceConfig {
   primaryColor: string
@@ -53,11 +55,11 @@ const UPDATE_APPEARANCE_MUTATION = `
   }
 `
 
-const themeOptions = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System Default' },
-]
+const themeOptions = computed(() => [
+  { value: 'light', label: t('admin.appearance.themeLight') },
+  { value: 'dark', label: t('admin.appearance.themeDark') },
+  { value: 'system', label: t('admin.appearance.themeSystem') },
+])
 
 onMounted(async () => {
   const result = await fetchAppearance(APPEARANCE_QUERY)
@@ -89,20 +91,20 @@ async function saveAppearance () {
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Appearance
+      {{ $t('admin.appearance.heading') }}
     </h2>
 
     <div v-if="loading" class="text-sm text-gray-500">
-      Loading appearance settings...
+      {{ $t('admin.appearance.loading') }}
     </div>
 
     <div v-else-if="error" class="rounded-md bg-red-50 p-4 text-sm text-red-700">
-      Failed to load appearance settings: {{ error.message }}
+      {{ $t('admin.appearance.loadFailed', { message: error.message }) }}
     </div>
 
     <form v-else class="space-y-6 max-w-2xl" @submit.prevent="saveAppearance">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Primary Color</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.appearance.primaryColor') }}</label>
         <div class="flex items-center gap-3">
           <input v-model="form.primaryColor" type="color" class="h-10 w-10 rounded border border-gray-300 cursor-pointer" />
           <input v-model="form.primaryColor" type="text" class="form-input w-40" placeholder="#3b82f6" />
@@ -110,7 +112,7 @@ async function saveAppearance () {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Secondary Color</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.appearance.secondaryColor') }}</label>
         <div class="flex items-center gap-3">
           <input v-model="form.secondaryColor" type="color" class="h-10 w-10 rounded border border-gray-300 cursor-pointer" />
           <input v-model="form.secondaryColor" type="text" class="form-input w-40" placeholder="#6366f1" />
@@ -118,7 +120,7 @@ async function saveAppearance () {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Hover Color</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.appearance.hoverColor') }}</label>
         <div class="flex items-center gap-3">
           <input v-model="form.hoverColor" type="color" class="h-10 w-10 rounded border border-gray-300 cursor-pointer" />
           <input v-model="form.hoverColor" type="text" class="form-input w-40" placeholder="#2563eb" />
@@ -126,7 +128,7 @@ async function saveAppearance () {
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Default Theme</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.appearance.defaultTheme') }}</label>
         <select v-model="form.defaultTheme" class="form-input w-full">
           <option v-for="theme in themeOptions" :key="theme.value" :value="theme.value">
             {{ theme.label }}
@@ -135,37 +137,37 @@ async function saveAppearance () {
       </div>
 
       <div class="rounded-md border border-gray-200 p-4">
-        <p class="text-sm font-medium text-gray-700 mb-3">Preview</p>
+        <p class="text-sm font-medium text-gray-700 mb-3">{{ $t('admin.appearance.preview') }}</p>
         <div class="flex items-center gap-3">
           <div
             class="h-10 w-10 rounded-md border border-gray-300"
             :style="{ backgroundColor: form.primaryColor }"
-            title="Primary"
+            :title="$t('admin.appearance.previewPrimary')"
           />
           <div
             class="h-10 w-10 rounded-md border border-gray-300"
             :style="{ backgroundColor: form.secondaryColor }"
-            title="Secondary"
+            :title="$t('admin.appearance.previewSecondary')"
           />
           <div
             class="h-10 w-10 rounded-md border border-gray-300"
             :style="{ backgroundColor: form.hoverColor }"
-            title="Hover"
+            :title="$t('admin.appearance.previewHover')"
           />
         </div>
       </div>
 
       <div v-if="saveError" class="rounded-md bg-red-50 p-4 text-sm text-red-700">
-        Failed to save: {{ saveError.message }}
+        {{ $t('admin.appearance.saveFailed', { message: saveError.message }) }}
       </div>
 
       <div v-if="saveSuccess" class="rounded-md bg-green-50 p-4 text-sm text-green-700">
-        Appearance settings saved successfully.
+        {{ $t('admin.appearance.saveSuccess') }}
       </div>
 
       <div>
         <button type="submit" class="button button-sm primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save Appearance' }}
+          {{ saving ? $t('common.saving') : $t('admin.appearance.saveAppearance') }}
         </button>
       </div>
     </form>

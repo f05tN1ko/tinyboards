@@ -3,6 +3,7 @@
 // Redirect there with the create form pre-opened via query param.
 const route = useRoute()
 const boardName = route.params.board as string
+const { t } = useI18n()
 
 definePageMeta({ middleware: 'guards' })
 
@@ -13,6 +14,6 @@ onMounted(async () => {
 
 <template>
   <div class="p-4">
-    <p class="text-sm text-gray-500">Redirecting to flair management...</p>
+    <p class="text-sm text-gray-500">{{ $t('board.flairs.redirecting') }}</p>
   </div>
 </template>

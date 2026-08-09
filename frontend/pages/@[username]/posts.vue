@@ -2,6 +2,8 @@
 import { useGraphQL } from '~/composables/useGraphQL'
 import type { Post } from '~/types/generated'
 
+const { t } = useI18n()
+
 const route = useRoute()
 const username = computed(() => route.params.username as string)
 
@@ -78,7 +80,7 @@ await fetchPosts()
   <div>
     <div class="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center justify-between mb-4">
       <h2 class="text-sm font-semibold text-gray-900">
-        Posts by @{{ username }}
+        {{ $t('profile.postsBy', { username }) }}
       </h2>
       <CommonSortSelector v-model="sort" @update:model-value="setSort" />
     </div>

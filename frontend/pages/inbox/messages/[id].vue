@@ -4,6 +4,7 @@ import { useAuthStore } from '~/stores/auth'
 import { sanitizeHtml } from '~/utils/sanitize'
 
 definePageMeta({ middleware: 'guards' })
+const { t } = useI18n()
 
 const route = useRoute()
 const userId = route.params.id as string
@@ -65,7 +66,7 @@ const limit = 50
 const hasMore = ref(false)
 const threadContainer = ref<HTMLElement | null>(null)
 
-useHead({ title: 'Conversation' })
+useHead({ title: () => t('inbox.conversation') })
 
 function formatTimestamp (dateString: string): string {
   const date = new Date(dateString)
@@ -146,10 +147,10 @@ await fetchMessages()
   <div class="max-w-4xl mx-auto px-4 py-4 flex flex-col" style="height: calc(100vh - 8rem);">
     <div class="flex items-center gap-2 mb-4">
       <NuxtLink to="/inbox/messages" class="button button-sm white">
-        Back
+        {{ $t('inbox.back') }}
       </NuxtLink>
       <h1 class="text-lg font-semibold text-gray-900">
-        Conversation
+        {{ $t('inbox.conversation') }}
       </h1>
     </div>
 
@@ -163,12 +164,12 @@ await fetchMessages()
       >
         <div v-if="hasMore" class="text-center pb-2">
           <button class="button button-sm white" :disabled="loading" @click="loadOlder">
-            Load older messages
+            {{ $t('inbox.loadOlder') }}
           </button>
         </div>
 
         <p v-if="messages.length === 0" class="text-sm text-gray-500 text-center py-8">
-          No messages yet. Start the conversation below.
+          {{ $t('inbox.noMessages') }}
         </p>
 
         <div

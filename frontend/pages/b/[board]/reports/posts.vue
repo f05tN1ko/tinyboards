@@ -5,8 +5,9 @@ definePageMeta({ middleware: 'guards' })
 
 const route = useRoute()
 const boardName = route.params.board as string
+const { t } = useI18n()
 
-useHead({ title: `Post Reports - b/${boardName}` })
+useHead({ title: t('board.reports.postsTitle', { board: boardName }) })
 
 interface PostReportView {
   id: string
@@ -86,6 +87,12 @@ function statusBadgeClass (status: string): string {
   }
 }
 
+const filterOptions = computed(() => [
+  { value: 'pending', label: t('board.mod.pending') },
+  { value: 'resolved', label: t('board.mod.resolvedStatus') },
+  { value: 'dismissed', label: t('board.mod.dismissedStatus') },
+])
+
 onMounted(async () => {
   const { execute: execBoard } = useGraphQL<{ board: { id: string } }>()
   const result = await execBoard(BOARD_QUERY, { variables: { name: boardName } })
@@ -101,18 +108,18 @@ const reports = computed(() => data.value?.getPostReports ?? [])
 <template>
   <div class="p-4">
     <h2 class="text-base font-semibold text-gray-900 mb-4">
-      Post Reports
+      {{ $t('board.reports.postsHeading') }}
     </h2>
 
     <div class="flex gap-2 mb-4">
       <button
-        v-for="filter in ['pending', 'resolved', 'dismissed']"
-        :key="filter"
+        v-for="filter in filterOptions"
+        :key="filter.value"
         class="button button-sm"
-        :class="statusFilter === filter ? 'primary' : 'white'"
-        @click="changeFilter(filter)"
+        :class="statusFilter === filter.value ? 'primary' : 'white'"
+        @click="changeFilter(filter.value)"
       >
-        {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
+        {{ filter.label }}
       </button>
     </div>
 
@@ -120,7 +127,7 @@ const reports = computed(() => data.value?.getPostReports ?? [])
     <CommonErrorDisplay v-else-if="error" :message="error.message" />
 
     <div v-else-if="reports.length === 0" class="text-sm text-gray-500">
-      No post reports found.
+      {{ $t('board.reports.noPostReports') }}
     </div>
 
     <div v-else class="space-y-3">
@@ -135,7 +142,7 @@ const reports = computed(() => data.value?.getPostReports ?? [])
               {{ report.originalPostTitle }}
             </h3>
             <p class="mt-1 text-sm text-gray-600">
-              Reason: {{ report.reason }}
+              {{ $t('board.reports.reason', { reason: report.reason }) }}
             </p>
             <p class="mt-1 text-xs text-gray-500">
               {{ formatDate(report.createdAt) }}
@@ -144,10 +151,10 @@ const reports = computed(() => data.value?.getPostReports ?? [])
           <div class="ml-4 flex items-center gap-2 shrink-0">
             <template v-if="report.status === 'pending'">
               <button class="button button-sm primary" :disabled="actioning" @click="resolveReport(report.id)">
-                Resolve
+                {{ $t('board.reports.resolve') }}
               </button>
               <button class="button button-sm white" :disabled="actioning" @click="dismissReport(report.id)">
-                Dismiss
+                {{ $t('board.reports.dismiss') }}
               </button>
             </template>
             <span

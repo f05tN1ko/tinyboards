@@ -1,6 +1,7 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Security Settings' })
+const { t } = useI18n()
+useHead({ title: () => t('settings.security.title') })
 
 const oldPassword = ref('')
 const newPassword = ref('')
@@ -14,12 +15,12 @@ async function changePassword (): Promise<void> {
   success.value = false
 
   if (newPassword.value !== confirmPassword.value) {
-    errorMsg.value = 'Passwords do not match.'
+    errorMsg.value = t('settings.security.passwordsDoNotMatch')
     return
   }
 
   if (newPassword.value.length < 8) {
-    errorMsg.value = 'Password must be at least 8 characters.'
+    errorMsg.value = t('settings.security.passwordTooShort')
     return
   }
 
@@ -41,7 +42,7 @@ async function changePassword (): Promise<void> {
     setTimeout(() => { success.value = false }, 3000)
   } catch (err: unknown) {
     const fetchError = err as { data?: { error?: string }; statusMessage?: string }
-    errorMsg.value = fetchError.data?.error ?? fetchError.statusMessage ?? 'Failed to change password'
+    errorMsg.value = fetchError.data?.error ?? fetchError.statusMessage ?? t('settings.security.failedToChangePassword')
   }
 
   saving.value = false
@@ -51,22 +52,22 @@ async function changePassword (): Promise<void> {
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Security
+      {{ $t('settings.security.heading') }}
     </h2>
 
     <form @submit.prevent="changePassword" class="space-y-4 max-w-md">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.security.currentPassword') }}</label>
         <input v-model="oldPassword" type="password" class="form-input" required autocomplete="current-password" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.security.newPassword') }}</label>
         <input v-model="newPassword" type="password" class="form-input" required autocomplete="new-password" minlength="8" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.security.confirmPassword') }}</label>
         <input v-model="confirmPassword" type="password" class="form-input" required autocomplete="new-password" />
       </div>
 
@@ -74,9 +75,9 @@ async function changePassword (): Promise<void> {
 
       <div class="flex items-center gap-3">
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Change Password' }}
+          {{ saving ? $t('settings.security.saving') : $t('settings.security.changePassword') }}
         </button>
-        <span v-if="success" class="text-sm text-green-600">Password changed.</span>
+        <span v-if="success" class="text-sm text-green-600">{{ $t('settings.security.passwordChanged') }}</span>
       </div>
     </form>
   </div>
