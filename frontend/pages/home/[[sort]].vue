@@ -5,15 +5,17 @@ import { usePosts } from '~/composables/usePosts'
 import { timeAgo, formatDate } from '~/utils/date'
 import type { ListingType, Post } from '~/types/generated'
 
+const { t, locale } = useI18n()
+
 const authStore = useAuthStore()
 const siteStore = useSiteStore()
 
-useHead({ title: 'Home' })
+useHead({ title: () => t('home.title') })
 useSeoMeta({
-  title: computed(() => `Home | ${siteStore.name || 'TinyBoards'}`),
-  ogTitle: computed(() => `Home | ${siteStore.name || 'TinyBoards'}`),
-  description: computed(() => siteStore.description || 'A community-driven discussion platform.'),
-  ogDescription: computed(() => siteStore.description || 'A community-driven discussion platform.'),
+  title: computed(() => `${t('home.title')} | ${siteStore.name || 'TinyBoards'}`),
+  ogTitle: computed(() => `${t('home.title')} | ${siteStore.name || 'TinyBoards'}`),
+  description: computed(() => siteStore.description || t('home.description')),
+  ogDescription: computed(() => siteStore.description || t('home.description')),
   ogImage: computed(() => siteStore.icon || undefined),
   ogType: 'website',
 })
@@ -99,6 +101,10 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
     await threadPosts.fetchPosts()
   }
 }
+
+function formatDateLocalized (dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
+}
 </script>
 
 <template>
@@ -116,7 +122,7 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
           </svg>
-          Feed
+          {{ $t('home.feed') }}
         </button>
         <button
           class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors"
@@ -128,7 +134,7 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
-          Threads
+          {{ $t('home.threads') }}
         </button>
       </div>
     </div>
@@ -172,8 +178,8 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
           </div>
-          <p class="text-sm font-medium text-gray-600 mb-1">No threads yet</p>
-          <p class="text-xs text-gray-400">No forum boards have any threads yet.</p>
+          <p class="text-sm font-medium text-gray-600 mb-1">{{ $t('home.noThreads') }}</p>
+          <p class="text-xs text-gray-400">{{ $t('home.noThreadsHint') }}</p>
         </div>
 
         <!-- Threads grouped by board -->
@@ -195,16 +201,16 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
                 :to="`/b/${group.boardName}`"
                 class="text-[10px] text-gray-400 hover:text-primary no-underline ml-auto"
               >
-                View board
+                {{ $t('home.viewBoard') }}
               </NuxtLink>
             </div>
 
             <!-- Thread list for this board -->
             <div class="forum-thread-list">
               <div class="forum-header">
-                <div class="forum-header-topic">Topic</div>
-                <div class="forum-header-stats">Replies</div>
-                <div class="forum-header-activity">Last Post</div>
+                <div class="forum-header-topic">{{ $t('home.topic') }}</div>
+                <div class="forum-header-stats">{{ $t('home.replies') }}</div>
+                <div class="forum-header-activity">{{ $t('home.lastPost') }}</div>
               </div>
 
               <NuxtLink
@@ -223,21 +229,21 @@ async function switchTab (tab: 'feed' | 'threads'): Promise<void> {
                 </div>
                 <div class="forum-thread-content">
                   <div class="forum-thread-title-row">
-                    <span v-if="thread.isFeaturedBoard" class="forum-pin-badge">Pinned</span>
-                    <span v-if="thread.isLocked" class="forum-lock-badge" title="Locked">
+                    <span v-if="thread.isFeaturedBoard" class="forum-pin-badge">{{ $t('home.pinned') }}</span>
+                    <span v-if="thread.isLocked" class="forum-lock-badge" :title="$t('home.locked')">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                     </span>
                     <h3 class="forum-thread-title">{{ thread.title }}</h3>
                   </div>
                   <p class="forum-thread-meta">
-                    by <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || 'unknown' }}</span>
+                    {{ $t('home.by') }} <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || $t('home.unknown') }}</span>
                     &middot;
-                    <time :datetime="thread.createdAt" :title="thread.createdAt">{{ formatDate(thread.createdAt) }}</time>
+                    <time :datetime="thread.createdAt" :title="thread.createdAt">{{ formatDateLocalized(thread.createdAt) }}</time>
                   </p>
                 </div>
                 <div class="forum-thread-stats">
                   <span class="forum-stat-number">{{ thread.commentCount }}</span>
-                  <span class="forum-stat-label">{{ thread.commentCount === 1 ? 'reply' : 'replies' }}</span>
+                  <span class="forum-stat-label">{{ thread.commentCount === 1 ? $t('home.reply') : $t('home.repliesCount') }}</span>
                 </div>
                 <div class="forum-thread-last-post">
                   <template v-if="thread.newestCommentTime && thread.commentCount > 0">

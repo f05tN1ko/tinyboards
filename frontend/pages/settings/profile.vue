@@ -3,8 +3,10 @@ import { useGraphQL } from '~/composables/useGraphQL'
 import { useFileUpload } from '~/composables/useFileUpload'
 import { useAuth } from '~/composables/useAuth'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Profile Settings' })
+useHead({ title: () => t('settings.profile.title') })
 
 const { user, fetchMe } = useAuth()
 const { uploadFile, uploading } = useFileUpload()
@@ -109,7 +111,7 @@ async function saveProfile (): Promise<void> {
       avatarUrl.value = url
       pendingAvatarFile.value = null
     } else {
-      saveError.value = 'Failed to upload avatar'
+      saveError.value = t('settings.profile.avatarUploadFailed')
       saving.value = false
       return
     }
@@ -121,7 +123,7 @@ async function saveProfile (): Promise<void> {
       bannerUrl.value = url
       pendingBannerFile.value = null
     } else {
-      saveError.value = 'Failed to upload banner'
+      saveError.value = t('settings.profile.bannerUploadFailed')
       saving.value = false
       return
     }
@@ -157,27 +159,27 @@ async function saveProfile (): Promise<void> {
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Profile
+      {{ $t('settings.profile.heading') }}
     </h2>
 
     <form @submit.prevent="saveProfile" class="space-y-6 max-w-lg">
       <!-- Avatar -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('settings.profile.avatar') }}</label>
         <div class="flex items-center gap-4">
           <div class="h-20 w-20 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200">
-            <img v-if="avatarPreview" :src="avatarPreview" alt="Avatar" class="h-full w-full object-cover" />
+            <img v-if="avatarPreview" :src="avatarPreview" :alt="$t('settings.profile.avatar')" class="h-full w-full object-cover" />
             <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
           <div class="flex gap-2">
             <label class="button white button-sm cursor-pointer">
-              {{ avatarPreview ? 'Change' : 'Upload' }}
+              {{ avatarPreview ? $t('settings.profile.change') : $t('settings.profile.upload') }}
               <input type="file" accept="image/*" class="hidden" @change="handleAvatarSelect" />
             </label>
             <button v-if="avatarPreview" type="button" class="button white button-sm text-red-600" @click="removeAvatar">
-              Remove
+              {{ $t('settings.profile.remove') }}
             </button>
           </div>
         </div>
@@ -185,87 +187,87 @@ async function saveProfile (): Promise<void> {
 
       <!-- Banner -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Profile Banner</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('settings.profile.banner') }}</label>
         <div
           class="w-full h-28 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border border-gray-200"
           :style="bannerPreview ? { backgroundImage: `url(${bannerPreview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
         >
-          <span v-if="!bannerPreview" class="text-gray-400 text-xs">No banner (recommended 4:1 aspect ratio)</span>
+          <span v-if="!bannerPreview" class="text-gray-400 text-xs">{{ $t('settings.profile.bannerHint') }}</span>
         </div>
         <div class="flex gap-2 mt-2">
           <label class="button white button-sm cursor-pointer">
-            {{ bannerPreview ? 'Change' : 'Upload banner' }}
+            {{ bannerPreview ? $t('settings.profile.change') : $t('settings.profile.uploadBanner') }}
             <input type="file" accept="image/*" class="hidden" @change="handleBannerSelect" />
           </label>
           <button v-if="bannerPreview" type="button" class="button white button-sm text-red-600" @click="removeBanner">
-            Remove
+            {{ $t('settings.profile.remove') }}
           </button>
         </div>
       </div>
 
       <!-- Profile Background -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Profile Background URL</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.profile.backgroundUrl') }}</label>
         <input
           v-model="profileBackground"
           type="url"
           class="form-input"
           placeholder="https://example.com/background.jpg"
         >
-        <p class="text-xs text-gray-400 mt-1">Image shown behind your profile header. Leave empty for the default gradient.</p>
+        <p class="text-xs text-gray-400 mt-1">{{ $t('settings.profile.backgroundHint') }}</p>
       </div>
 
       <!-- Avatar Frame -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Avatar Frame URL</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.profile.frameUrl') }}</label>
         <input
           v-model="avatarFrame"
           type="url"
           class="form-input"
           placeholder="https://example.com/frame.png"
         >
-        <p class="text-xs text-gray-400 mt-1">Decorative frame layered over your avatar.</p>
+        <p class="text-xs text-gray-400 mt-1">{{ $t('settings.profile.frameHint') }}</p>
       </div>
 
       <!-- Display Name -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.profile.displayName') }}</label>
         <input
           v-model="displayName"
           type="text"
           class="form-input"
-          placeholder="Your display name"
+          :placeholder="$t('settings.profile.displayNamePlaceholder')"
         >
       </div>
 
       <!-- Bio -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.profile.bio') }}</label>
         <textarea
           v-model="bio"
           class="form-input"
           rows="4"
-          placeholder="Tell others about yourself..."
+          :placeholder="$t('settings.profile.bioPlaceholder')"
         />
       </div>
 
       <!-- Signature -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Signature</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.profile.signature') }}</label>
         <textarea
           v-model="signature"
           class="form-input"
           rows="3"
-          placeholder="Appears below your comments. Basic HTML allowed."
+          :placeholder="$t('settings.profile.signaturePlaceholder')"
         />
-        <p class="text-xs text-gray-400 mt-1">Shown below your comments to users who have signatures enabled.</p>
+        <p class="text-xs text-gray-400 mt-1">{{ $t('settings.profile.signatureHint') }}</p>
       </div>
 
       <div class="flex items-center gap-3">
         <button type="submit" class="button primary" :disabled="saving || uploading">
-          {{ uploading ? 'Uploading...' : saving ? 'Saving...' : 'Save' }}
+          {{ uploading ? $t('settings.profile.uploading') : saving ? $t('settings.profile.saving') : $t('settings.profile.save') }}
         </button>
-        <span v-if="success" class="text-sm text-green-600">Saved successfully.</span>
+        <span v-if="success" class="text-sm text-green-600">{{ $t('settings.profile.saveSuccess') }}</span>
         <span v-if="saveError" class="text-sm text-red-600">{{ saveError }}</span>
       </div>
     </form>

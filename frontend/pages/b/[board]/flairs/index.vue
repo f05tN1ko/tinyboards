@@ -9,7 +9,9 @@ const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
 
-useHead({ title: `Flairs - b/${boardName}` })
+const { t } = useI18n()
+
+useHead({ title: t('board.flairs.title', { board: boardName }) })
 
 const { flairs, loading, fetchFlairs, createFlair, deleteFlair } = useFlairs()
 const boardId = ref<string | null>(null)
@@ -84,7 +86,7 @@ async function handleCreate () {
   creating.value = false
 
   if (result) {
-    toast.success('Flair created')
+    toast.success(t('board.flairs.created'))
     newFlair.templateName = ''
     newFlair.textDisplay = ''
     newFlair.textColor = '#000000'
@@ -94,14 +96,14 @@ async function handleCreate () {
     newFlair.isEditable = false
     showCreateForm.value = false
   } else {
-    toast.error('Failed to create flair')
+    toast.error(t('board.flairs.createFailed'))
   }
 }
 
 async function handleDelete (templateId: string) {
   await deleteFlair(templateId)
   confirmDeleteId.value = null
-  toast.success('Flair deleted')
+  toast.success(t('board.flairs.deleted'))
 }
 </script>
 
@@ -112,52 +114,52 @@ async function handleDelete (templateId: string) {
         <nav class="text-sm text-gray-500 mb-1">
           <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
           <span class="mx-1">/</span>
-          <span>Flairs</span>
+          <span>{{ $t('board.flairs.heading') }}</span>
         </nav>
-        <h1 class="text-lg font-semibold text-gray-900">Flair Management</h1>
+        <h1 class="text-lg font-semibold text-gray-900">{{ $t('board.flairs.createHeading') }}</h1>
       </div>
       <button
         v-if="!showCreateForm"
         class="button primary button-sm"
         @click="showCreateForm = true"
       >
-        Create flair
+        {{ $t('board.flairs.createFlair') }}
       </button>
     </div>
 
     <!-- Create form -->
     <div v-if="showCreateForm" class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-      <h3 class="text-sm font-medium text-gray-900 mb-4">New Flair</h3>
+      <h3 class="text-sm font-medium text-gray-900 mb-4">{{ $t('board.flairs.createHeading') }}</h3>
       <form class="space-y-4" @submit.prevent="handleCreate">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.templateName') }}</label>
             <input v-model="newFlair.templateName" type="text" class="form-input w-full" placeholder="e.g. discussion" required />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Display Text</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.textDisplay') }}</label>
             <input v-model="newFlair.textDisplay" type="text" class="form-input w-full" placeholder="e.g. Discussion (optional)" />
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Flair Type</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.flairType') }}</label>
           <select v-model="newFlair.flairType" class="form-input w-full">
-            <option value="Post">Post Flair</option>
-            <option value="User">User Flair</option>
+            <option value="Post">{{ $t('board.flairs.typePost') }}</option>
+            <option value="User">{{ $t('board.flairs.typeUser') }}</option>
           </select>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.textColor') }}</label>
             <div class="flex items-center gap-2">
               <input v-model="newFlair.textColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
               <input v-model="newFlair.textColor" type="text" class="form-input w-full font-mono text-sm" placeholder="#000000" />
             </div>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+            <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.backgroundColor') }}</label>
             <div class="flex items-center gap-2">
               <input v-model="newFlair.backgroundColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
               <input v-model="newFlair.backgroundColor" type="text" class="form-input w-full font-mono text-sm" placeholder="#e0e0e0" />
@@ -168,29 +170,29 @@ async function handleDelete (templateId: string) {
         <div class="space-y-2">
           <label class="flex items-center gap-2">
             <input v-model="newFlair.isModOnly" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Mod-only (only moderators can assign)</span>
+            <span class="text-sm text-gray-700">{{ $t('board.flairs.modOnly') }}</span>
           </label>
           <label class="flex items-center gap-2">
             <input v-model="newFlair.isEditable" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Editable (users can customize text)</span>
+            <span class="text-sm text-gray-700">{{ $t('board.flairs.editable') }}</span>
           </label>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Preview</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.preview') }}</label>
           <span
             class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
             :style="{ color: newFlair.textColor, backgroundColor: newFlair.backgroundColor }"
           >
-            {{ newFlair.textDisplay || newFlair.templateName || 'Preview' }}
+            {{ newFlair.textDisplay || newFlair.templateName || $t('board.flairs.previewPlaceholder') }}
           </span>
         </div>
 
         <div class="flex gap-3">
           <button type="submit" class="button primary button-sm" :disabled="creating">
-            {{ creating ? 'Creating...' : 'Create' }}
+            {{ creating ? $t('board.flairs.creating') : $t('board.flairs.createFlair') }}
           </button>
-          <button type="button" class="button white button-sm" @click="showCreateForm = false">Cancel</button>
+          <button type="button" class="button white button-sm" @click="showCreateForm = false">{{ $t('board.flairs.cancel') }}</button>
         </div>
       </form>
     </div>
@@ -198,7 +200,7 @@ async function handleDelete (templateId: string) {
     <!-- Type filter -->
     <div class="flex gap-2 mb-4">
       <button
-        v-for="ft in [{ label: 'All', value: 'all' }, { label: 'Post', value: 'Post' }, { label: 'User', value: 'User' }]"
+        v-for="ft in [{ label: $t('board.mod.all'), value: 'all' }, { label: $t('board.flairs.typePost'), value: 'Post' }, { label: $t('board.flairs.typeUser'), value: 'User' }]"
         :key="ft.value"
         class="button button-sm"
         :class="filterType === ft.value ? 'primary' : 'white'"
@@ -211,7 +213,7 @@ async function handleDelete (templateId: string) {
     <CommonLoadingSpinner v-if="loading" />
 
     <div v-else-if="filteredFlairs.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-500">No flairs configured for this board.</p>
+      <p class="text-sm text-gray-500">{{ $t('board.flairs.noFlairs') }}</p>
     </div>
 
     <div v-else class="space-y-2">
@@ -235,21 +237,21 @@ async function handleDelete (templateId: string) {
             :to="`/b/${boardName}/flairs/${flair.id}/edit`"
             class="button white button-sm"
           >
-            Edit
+            {{ $t('board.flairs.edit') }}
           </NuxtLink>
           <button
             v-if="confirmDeleteId === flair.id"
             class="button button-sm text-red-600 hover:bg-red-50"
             @click="handleDelete(flair.id)"
           >
-            Confirm delete
+            {{ $t('board.flairs.confirmDelete') }}
           </button>
           <button
             v-else
             class="button white button-sm text-red-600"
             @click="confirmDeleteId = flair.id"
           >
-            Delete
+            {{ $t('board.flairs.delete') }}
           </button>
         </div>
       </div>

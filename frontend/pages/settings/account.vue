@@ -4,7 +4,8 @@ import { useAuth } from '~/composables/useAuth'
 import { useUIStore, type ThemeMode } from '~/stores/ui'
 
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Account Settings' })
+const { t } = useI18n()
+useHead({ title: () => t('settings.account.title') })
 
 const { logout } = useAuth()
 const uiStore = useUIStore()
@@ -20,7 +21,6 @@ const GET_SETTINGS_QUERY = `
       theme
       defaultSortType
       defaultListingType
-      interfaceLanguage
       isEmailNotificationsEnabled
       isEmailVerified
       editorMode
@@ -37,7 +37,6 @@ const UPDATE_SETTINGS_MUTATION = `
       showNSFW
       showBots
       theme
-      interfaceLanguage
       isEmailNotificationsEnabled
     }
   }
@@ -53,7 +52,6 @@ interface SettingsData {
   showNSFW: boolean
   showBots: boolean
   theme: string
-  interfaceLanguage: string
   isEmailNotificationsEnabled: boolean
   isEmailVerified: boolean
   email: string | null
@@ -89,7 +87,7 @@ async function requestVerification (): Promise<void> {
     verificationSent.value = true
   } catch (err: unknown) {
     const fetchError = err as { data?: { error?: string }; statusMessage?: string }
-    verificationError.value = fetchError.data?.error ?? fetchError.statusMessage ?? 'Failed to send verification email'
+    verificationError.value = fetchError.data?.error ?? fetchError.statusMessage ?? t('settings.account.failedToSendVerification')
   } finally {
     verificationSending.value = false
   }
@@ -117,7 +115,6 @@ async function saveSettings (): Promise<void> {
         showNsfw: settings.value.showNSFW,
         showBots: settings.value.showBots,
         theme: settings.value.theme,
-        interfaceLanguage: settings.value.interfaceLanguage,
         isEmailNotificationsEnabled: settings.value.isEmailNotificationsEnabled,
       },
     },
@@ -158,7 +155,7 @@ async function deleteAccount (): Promise<void> {
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Account
+      {{ $t('settings.account.title') }}
     </h2>
 
     <CommonErrorDisplay v-if="error" :message="error.message" @retry="fetchSettings" />
@@ -167,9 +164,9 @@ async function deleteAccount (): Promise<void> {
     <template v-else-if="settings">
       <form @submit.prevent="saveSettings" class="space-y-4 max-w-md">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.account.email') }}</label>
           <div class="flex items-center gap-2">
-            <p class="text-sm text-gray-600">{{ settings.email ?? 'Not set' }}</p>
+            <p class="text-sm text-gray-600">{{ settings.email ?? $t('settings.account.emailNotSet') }}</p>
             <span
               v-if="settings.email && settings.isEmailVerified"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-green-100 text-green-700"
@@ -177,13 +174,13 @@ async function deleteAccount (): Promise<void> {
               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
-              Verified
+              {{ $t('settings.account.verified') }}
             </span>
             <span
               v-else-if="settings.email"
               class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-medium bg-yellow-100 text-yellow-700"
             >
-              Not verified
+              {{ $t('settings.account.notVerified') }}
             </span>
           </div>
           <div v-if="settings.email && !settings.isEmailVerified" class="mt-1.5">
@@ -193,74 +190,67 @@ async function deleteAccount (): Promise<void> {
               :disabled="verificationSending"
               @click="requestVerification"
             >
-              {{ verificationSending ? 'Sending...' : 'Send verification email' }}
+              {{ verificationSending ? $t('settings.account.sendingVerification') : $t('settings.account.sendVerification') }}
             </button>
-            <p v-else class="text-sm text-green-600">Verification email sent. Check your inbox.</p>
+            <p v-else class="text-sm text-green-600">{{ $t('settings.account.verificationSent') }}</p>
             <p v-if="verificationError" class="text-sm text-red-600 mt-0.5">{{ verificationError }}</p>
           </div>
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Theme</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('settings.account.theme') }}</label>
           <select v-model="settings.theme" class="form-input">
-            <option value="default">Default (Light)</option>
-            <option value="dark">Dark</option>
-            <option value="ocean">Ocean</option>
-            <option value="forest">Forest</option>
-            <option value="sunset">Sunset</option>
-            <option value="purple">Purple</option>
-          </select>
-        </div>
-
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Language</label>
-          <select v-model="settings.interfaceLanguage" class="form-input">
-            <option value="en">English</option>
+            <option value="default">{{ $t('settings.account.themeDefault') }}</option>
+            <option value="dark">{{ $t('settings.account.themeDark') }}</option>
+            <option value="ocean">{{ $t('settings.account.themeOcean') }}</option>
+            <option value="forest">{{ $t('settings.account.themeForest') }}</option>
+            <option value="sunset">{{ $t('settings.account.themeSunset') }}</option>
+            <option value="purple">{{ $t('settings.account.themePurple') }}</option>
           </select>
         </div>
 
         <div class="space-y-2">
           <label class="flex items-center gap-2">
             <input v-model="settings.showNSFW" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Show NSFW content</span>
+            <span class="text-sm text-gray-700">{{ $t('settings.account.showNSFW') }}</span>
           </label>
 
           <label class="flex items-center gap-2">
             <input v-model="settings.showBots" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Show bot accounts</span>
+            <span class="text-sm text-gray-700">{{ $t('settings.account.showBots') }}</span>
           </label>
 
           <label class="flex items-center gap-2">
             <input v-model="settings.isEmailNotificationsEnabled" type="checkbox" class="form-checkbox" />
-            <span class="text-sm text-gray-700">Email notifications</span>
+            <span class="text-sm text-gray-700">{{ $t('settings.account.emailNotifications') }}</span>
           </label>
         </div>
 
         <div class="flex items-center gap-3">
           <button type="submit" class="button primary" :disabled="saving">
-            {{ saving ? 'Saving...' : 'Save' }}
+            {{ saving ? $t('settings.account.saving') : $t('settings.account.save') }}
           </button>
-          <span v-if="success" class="text-sm text-green-600">Saved successfully.</span>
+          <span v-if="success" class="text-sm text-green-600">{{ $t('settings.account.saveSuccess') }}</span>
           <span v-if="saveError" class="text-sm text-red-600">{{ saveError }}</span>
         </div>
       </form>
 
       <div class="mt-8 pt-6 border-t border-gray-200">
-        <h3 class="text-sm font-semibold text-red-600 mb-2">Danger Zone</h3>
+        <h3 class="text-sm font-semibold text-red-600 mb-2">{{ $t('settings.account.headingDangerZone') }}</h3>
         <button
           v-if="!showDeleteConfirm"
           class="button button-sm text-red-600 border-red-200 hover:bg-red-50"
           @click="showDeleteConfirm = true"
         >
-          Delete Account
+          {{ $t('settings.account.deleteAccount') }}
         </button>
         <div v-else class="flex items-center gap-2">
-          <p class="text-sm text-red-600">Are you sure? This cannot be undone.</p>
+          <p class="text-sm text-red-600">{{ $t('settings.account.deleteConfirmPrompt') }}</p>
           <button class="button button-sm text-red-600 border-red-300 hover:bg-red-50" :disabled="deleting" @click="deleteAccount">
-            {{ deleting ? 'Deleting...' : 'Yes, delete' }}
+            {{ deleting ? $t('settings.account.deleting') : $t('settings.account.deleteConfirm') }}
           </button>
           <button class="button button-sm white" @click="showDeleteConfirm = false">
-            Cancel
+            {{ $t('settings.account.cancel') }}
           </button>
         </div>
       </div>

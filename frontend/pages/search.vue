@@ -3,7 +3,8 @@ import { useGraphQL } from '~/composables/useGraphQL'
 import type { Post, Comment, User, Board } from '~/types/generated'
 import { sanitizeHtml } from '~/utils/sanitize'
 
-useHead({ title: 'Search' })
+const { t } = useI18n()
+useHead({ title: () => t('search.title') })
 
 const SEARCH_QUERY = `
   query SearchContent($q: String!, $searchType: SearchType, $page: Int, $limit: Int) {
@@ -75,13 +76,13 @@ const results = ref<SearchResult | null>(null)
 const hasSearched = ref(false)
 const hasMore = ref(false)
 
-const tabs = [
-  { value: 'all', label: 'All' },
-  { value: 'posts', label: 'Posts' },
-  { value: 'comments', label: 'Comments' },
-  { value: 'users', label: 'Users' },
-  { value: 'boards', label: 'Boards' },
-]
+const tabs = computed(() => [
+  { value: 'all', label: t('search.tabs.all') },
+  { value: 'posts', label: t('search.tabs.posts') },
+  { value: 'comments', label: t('search.tabs.comments') },
+  { value: 'users', label: t('search.tabs.users') },
+  { value: 'boards', label: t('search.tabs.boards') },
+])
 
 async function search (): Promise<void> {
   if (query.value.trim().length < 2) { return }
@@ -143,7 +144,7 @@ if (query.value) {
 <template>
   <div class="max-w-4xl mx-auto px-4 py-4">
     <h1 class="text-lg font-semibold text-gray-900 mb-4">
-      Search
+      {{ $t('search.title') }}
     </h1>
 
     <form @submit.prevent="search" class="mb-4 flex gap-2">
@@ -151,10 +152,10 @@ if (query.value) {
         v-model="query"
         type="search"
         class="form-input flex-1"
-        placeholder="Search posts, comments, users, boards..."
+        :placeholder="$t('search.placeholder')"
       >
       <button type="submit" class="button button-sm primary">
-        Search
+        {{ $t('search.button') }}
       </button>
     </form>
 
@@ -178,13 +179,13 @@ if (query.value) {
     <template v-else-if="results">
       <!-- Posts -->
       <div v-if="results.posts.length > 0 && (searchType === 'all' || searchType === 'posts')" class="mb-6">
-        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">Posts</h2>
+        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">{{ $t('search.resultsPosts') }}</h2>
         <PostList :posts="results.posts" :loading="false" />
       </div>
 
       <!-- Comments -->
       <div v-if="results.comments.length > 0 && (searchType === 'all' || searchType === 'comments')" class="mb-6">
-        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">Comments</h2>
+        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">{{ $t('search.resultsComments') }}</h2>
         <div class="space-y-2">
           <NuxtLink
             v-for="comment in results.comments"
@@ -198,7 +199,7 @@ if (query.value) {
               <span v-if="comment.creator" class="font-medium text-gray-700">
                 {{ comment.creator.displayName ?? comment.creator.name }}
               </span>
-              <span>&middot; {{ comment.score }} points</span>
+              <span>&middot; {{ $t('search.points', { count: comment.score }) }}</span>
             </div>
             <div v-if="comment.bodyHTML" class="text-sm text-gray-800 line-clamp-3 prose prose-sm max-w-none [&>*]:m-0" v-html="sanitizeHtml(comment.bodyHTML)" />
             <p v-else class="text-sm text-gray-800 line-clamp-3">{{ comment.body }}</p>
@@ -208,7 +209,7 @@ if (query.value) {
 
       <!-- Users -->
       <div v-if="results.users.length > 0 && (searchType === 'all' || searchType === 'users')" class="mb-6">
-        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">Users</h2>
+        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">{{ $t('search.resultsUsers') }}</h2>
         <div class="grid gap-3 sm:grid-cols-2">
           <UserCard v-for="user in results.users" :key="user.id" :user="user" />
         </div>
@@ -216,7 +217,7 @@ if (query.value) {
 
       <!-- Boards -->
       <div v-if="results.boards.length > 0 && (searchType === 'all' || searchType === 'boards')" class="mb-6">
-        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">Boards</h2>
+        <h2 v-if="searchType === 'all'" class="text-sm font-semibold text-gray-700 mb-2">{{ $t('search.resultsBoards') }}</h2>
         <div class="grid gap-3 sm:grid-cols-2">
           <BoardCard v-for="board in results.boards" :key="board.id" :board="board" />
         </div>
@@ -227,7 +228,7 @@ if (query.value) {
         v-if="results.posts.length === 0 && results.comments.length === 0 && results.users.length === 0 && results.boards.length === 0"
         class="text-sm text-gray-500 text-center py-8"
       >
-        No results found for "{{ query }}".
+        {{ $t('search.noResults', { query }) }}
       </p>
 
       <CommonPagination
@@ -240,7 +241,7 @@ if (query.value) {
     </template>
 
     <p v-else-if="!hasSearched" class="text-sm text-gray-500">
-      Enter a search term to find content.
+      {{ $t('search.enterTerm') }}
     </p>
   </div>
 </template>

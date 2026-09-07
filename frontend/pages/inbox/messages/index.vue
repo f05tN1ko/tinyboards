@@ -2,7 +2,8 @@
 import { useGraphQL } from '~/composables/useGraphQL'
 
 definePageMeta({ middleware: 'guards' })
-useHead({ title: 'Messages' })
+const { t } = useI18n()
+useHead({ title: () => t('inbox.messageListTitle') })
 
 interface OtherUser {
   id: string
@@ -51,6 +52,8 @@ interface ConversationsResponse {
 const { execute, loading, error } = useGraphQL<ConversationsResponse>()
 const conversations = ref<Conversation[]>([])
 
+// Localised relative-time formatter — uses i18n keys so output respects
+// the active UI language regardless of date-fns' locale configuration.
 function formatTime (dateString: string): string {
   const date = new Date(dateString)
   if (isNaN(date.getTime())) { return '' }
@@ -60,10 +63,10 @@ function formatTime (dateString: string): string {
   const diffHours = Math.floor(diffMins / 60)
   const diffDays = Math.floor(diffHours / 24)
 
-  if (diffMins < 1) { return 'just now' }
-  if (diffMins < 60) { return `${diffMins}m ago` }
-  if (diffHours < 24) { return `${diffHours}h ago` }
-  if (diffDays < 7) { return `${diffDays}d ago` }
+  if (diffMins < 1) { return t('inbox.time.justNow') }
+  if (diffMins < 60) { return t('inbox.time.minutesAgo', { count: diffMins }) }
+  if (diffHours < 24) { return t('inbox.time.hoursAgo', { count: diffHours }) }
+  if (diffDays < 7) { return t('inbox.time.daysAgo', { count: diffDays }) }
   return date.toLocaleDateString()
 }
 
@@ -86,10 +89,10 @@ await fetchConversations()
   <div class="max-w-5xl mx-auto px-4 py-4">
     <div class="bg-white rounded-lg border border-gray-200 px-4 py-3 mb-4 flex items-center justify-between">
       <h1 class="text-lg font-semibold text-gray-900">
-        Messages
+        {{ $t('inbox.messageListTitle') }}
       </h1>
       <NuxtLink to="/inbox" class="button button-sm white no-underline">
-        Back to Inbox
+        {{ $t('inbox.backToInbox') }}
       </NuxtLink>
     </div>
 
@@ -140,7 +143,7 @@ await fetchConversations()
     </div>
 
     <p v-else class="text-sm text-gray-500 text-center py-8">
-      No conversations yet.
+      {{ $t('inbox.noConversations') }}
     </p>
   </div>
 </template>

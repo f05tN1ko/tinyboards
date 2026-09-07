@@ -2,7 +2,8 @@
 import { useGraphQL } from '~/composables/useGraphQL'
 
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Privacy Settings' })
+const { t } = useI18n()
+useHead({ title: () => t('settings.privacy.title') })
 
 const UPDATE_SETTINGS_MUTATION = `
   mutation UpdateSettings($input: UpdateSettingsInput!) {
@@ -68,7 +69,7 @@ await fetchSettings()
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Privacy
+      {{ $t('settings.privacy.heading') }}
     </h2>
 
     <CommonErrorDisplay v-if="error" :message="error.message" @retry="fetchSettings" />
@@ -78,20 +79,20 @@ await fetchSettings()
       <div class="space-y-3">
         <label class="flex items-center gap-2">
           <input v-model="showNSFW" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Show NSFW content</span>
+          <span class="text-sm text-gray-700">{{ $t('settings.privacy.showNSFW') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
           <input v-model="showBots" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Show bot accounts in feeds</span>
+          <span class="text-sm text-gray-700">{{ $t('settings.privacy.showBots') }}</span>
         </label>
       </div>
 
       <div class="flex items-center gap-3">
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save' }}
+          {{ saving ? $t('settings.privacy.saving') : $t('settings.privacy.save') }}
         </button>
-        <span v-if="success" class="text-sm text-green-600">Saved successfully.</span>
+        <span v-if="success" class="text-sm text-green-600">{{ $t('settings.privacy.saveSuccess') }}</span>
       </div>
     </form>
   </div>

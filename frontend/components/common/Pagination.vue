@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
 defineProps<{
   page: number
   hasMore: boolean
@@ -27,17 +28,17 @@ function handleNext () {
       :disabled="page <= 1"
       @click="handlePrev"
     >
-      Previous
+      {{ $t('pagination.previous') }}
     </button>
 
-    <span class="text-sm text-gray-500">Page {{ page }}</span>
+    <span class="text-sm text-gray-500">{{ $t('pagination.page', { page }) }}</span>
 
     <button
       class="button white button-sm"
       :disabled="!hasMore"
       @click="handleNext"
     >
-      Next
+      {{ $t('pagination.next') }}
     </button>
   </div>
 </template>

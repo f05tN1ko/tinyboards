@@ -18,7 +18,6 @@ pub struct UpdateSettingsInput {
     pub theme: Option<String>,
     pub show_nsfw: Option<bool>,
     pub show_bots: Option<bool>,
-    pub interface_language: Option<String>,
     pub is_email_notifications_enabled: Option<bool>,
 }
 
@@ -38,7 +37,6 @@ impl UpdateSettings {
             theme: input.theme,
             show_nsfw: input.show_nsfw,
             show_bots: input.show_bots,
-            interface_language: input.interface_language,
             is_email_notifications_enabled: input.is_email_notifications_enabled,
             ..Default::default()
         };

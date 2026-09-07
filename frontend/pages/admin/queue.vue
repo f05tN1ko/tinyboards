@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Moderation Queue' })
+useHead({ title: () => t('admin.queue.title') })
 
 interface PostReportView {
   id: string
@@ -106,13 +108,19 @@ async function switchTab (tab: 'posts' | 'comments') {
   await loadReports()
 }
 
+const statusFilters = computed(() => [
+  { value: 'pending', label: t('admin.queue.filterPending') },
+  { value: 'resolved', label: t('admin.queue.filterResolved') },
+  { value: 'dismissed', label: t('admin.queue.filterDismissed') },
+])
+
 async function changeFilter (filter: string) {
   statusFilter.value = filter
   await loadReports()
 }
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -143,7 +151,7 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Moderation Queue
+      {{ $t('admin.queue.heading') }}
     </h2>
 
     <!-- Tabs -->
@@ -153,27 +161,27 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
         :class="activeTab === 'posts' ? 'primary' : 'white'"
         @click="switchTab('posts')"
       >
-        Post Reports
+        {{ $t('admin.queue.postReports') }}
       </button>
       <button
         class="button button-sm"
         :class="activeTab === 'comments' ? 'primary' : 'white'"
         @click="switchTab('comments')"
       >
-        Comment Reports
+        {{ $t('admin.queue.commentReports') }}
       </button>
     </div>
 
     <!-- Status filter -->
     <div class="flex gap-2 mb-6">
       <button
-        v-for="filter in ['pending', 'resolved', 'dismissed']"
-        :key="filter"
+        v-for="filter in statusFilters"
+        :key="filter.value"
         class="button button-sm"
-        :class="statusFilter === filter ? 'primary' : 'white'"
-        @click="changeFilter(filter)"
+        :class="statusFilter === filter.value ? 'primary' : 'white'"
+        @click="changeFilter(filter.value)"
       >
-        {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
+        {{ filter.label }}
       </button>
     </div>
 
@@ -183,7 +191,7 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
     <!-- Post reports -->
     <template v-else-if="activeTab === 'posts'">
       <div v-if="postReports.length === 0" class="text-sm text-gray-500">
-        No post reports found.
+        {{ $t('admin.queue.noPostReports') }}
       </div>
       <div v-else class="space-y-4">
         <div
@@ -197,7 +205,7 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
                 {{ report.originalPostTitle }}
               </h3>
               <p class="mt-1 text-sm text-gray-600">
-                Reason: {{ report.reason }}
+                {{ $t('admin.queue.reasonLabel', { reason: report.reason }) }}
               </p>
               <p class="mt-1 text-xs text-gray-500">
                 {{ formatDate(report.createdAt) }}
@@ -206,10 +214,10 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
             <div class="ml-4 flex items-center gap-2 shrink-0">
               <template v-if="report.status === 'pending'">
                 <button class="button button-sm primary" :disabled="actioning" @click="resolveReport(report.id)">
-                  Resolve
+                  {{ $t('admin.queue.resolve') }}
                 </button>
                 <button class="button button-sm white" :disabled="actioning" @click="dismissReport(report.id)">
-                  Dismiss
+                  {{ $t('admin.queue.dismiss') }}
                 </button>
               </template>
               <span
@@ -228,7 +236,7 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
     <!-- Comment reports -->
     <template v-else>
       <div v-if="commentReports.length === 0" class="text-sm text-gray-500">
-        No comment reports found.
+        {{ $t('admin.queue.noCommentReports') }}
       </div>
       <div v-else class="space-y-4">
         <div
@@ -242,7 +250,7 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
                 {{ report.originalCommentText }}
               </p>
               <p class="mt-1 text-sm text-gray-600">
-                Reason: {{ report.reason }}
+                {{ $t('admin.queue.reasonLabel', { reason: report.reason }) }}
               </p>
               <p class="mt-1 text-xs text-gray-500">
                 {{ formatDate(report.createdAt) }}
@@ -251,10 +259,10 @@ const currentError = computed(() => activeTab.value === 'posts' ? postError.valu
             <div class="ml-4 flex items-center gap-2 shrink-0">
               <template v-if="report.status === 'pending'">
                 <button class="button button-sm primary" :disabled="actioning" @click="resolveReport(report.id)">
-                  Resolve
+                  {{ $t('admin.queue.resolve') }}
                 </button>
                 <button class="button button-sm white" :disabled="actioning" @click="dismissReport(report.id)">
-                  Dismiss
+                  {{ $t('admin.queue.dismiss') }}
                 </button>
               </template>
               <span

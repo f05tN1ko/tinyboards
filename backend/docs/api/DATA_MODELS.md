@@ -107,7 +107,6 @@ type UserSettings {
   defaultSortType: Int!
   defaultListingType: Int!
   emailNotificationsEnabled: Boolean!
-  interfaceLanguage: String!
   updated: String
 }
 ```

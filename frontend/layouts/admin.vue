@@ -1,23 +1,25 @@
 <script setup lang="ts">
-const adminNav = [
-  { label: 'Dashboard', to: '/admin' },
-  { label: 'Settings', to: '/admin/settings' },
-  { label: 'Appearance', to: '/admin/appearance' },
-  { label: 'Users', to: '/admin/users' },
-  { label: 'Bans', to: '/admin/bans' },
-  { label: 'Board Settings', to: '/admin/board_settings' },
-  { label: 'Content', to: '/admin/content' },
-  { label: 'Filtering', to: '/admin/filtering' },
-  { label: 'Applications', to: '/admin/applications' },
-  { label: 'Invites', to: '/admin/invites' },
-  { label: 'Mod Queue', to: '/admin/queue' },
-  { label: 'Reports', to: '/admin/reports/posts' },
-  { label: 'Removed', to: '/admin/removed/posts' },
-  { label: 'Emojis', to: '/admin/emojis' },
-  { label: 'Flairs', to: '/admin/flairs' },
-  { label: 'Admins', to: '/admin/admins' },
-  { label: 'Custom CSS', to: '/admin/css' },
-]
+const { t } = useI18n()
+
+const adminNav = computed(() => [
+  { label: t('admin.nav.dashboard'), to: '/admin' },
+  { label: t('admin.nav.settings'), to: '/admin/settings' },
+  { label: t('admin.nav.appearance'), to: '/admin/appearance' },
+  { label: t('admin.nav.users'), to: '/admin/users' },
+  { label: t('admin.nav.bans'), to: '/admin/bans' },
+  { label: t('admin.nav.boardSettings'), to: '/admin/board_settings' },
+  { label: t('admin.nav.content'), to: '/admin/content' },
+  { label: t('admin.nav.filtering'), to: '/admin/filtering' },
+  { label: t('admin.nav.applications'), to: '/admin/applications' },
+  { label: t('admin.nav.invites'), to: '/admin/invites' },
+  { label: t('admin.nav.modQueue'), to: '/admin/queue' },
+  { label: t('admin.nav.reports'), to: '/admin/reports/posts' },
+  { label: t('admin.nav.removed'), to: '/admin/removed/posts' },
+  { label: t('admin.nav.emojis'), to: '/admin/emojis' },
+  { label: t('admin.nav.flairs'), to: '/admin/flairs' },
+  { label: t('admin.nav.admins'), to: '/admin/admins' },
+  { label: t('admin.nav.customCss'), to: '/admin/css' },
+])
 
 const mobileNavOpen = ref(false)
 </script>
@@ -35,7 +37,7 @@ const mobileNavOpen = ref(false)
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
-        Admin Menu
+        {{ $t('admin.menu') }}
         <svg
           class="w-4 h-4 ml-auto transition-transform"
           :class="{ 'rotate-180': mobileNavOpen }"
@@ -64,7 +66,7 @@ const mobileNavOpen = ref(false)
         <nav class="w-52 shrink-0 hidden lg:block">
           <div class="bg-white rounded-lg border border-gray-200 overflow-hidden sticky top-20">
             <div class="px-4 py-3 bg-primary text-white">
-              <h2 class="font-semibold text-sm">Admin Panel</h2>
+              <h2 class="font-semibold text-sm">{{ $t('admin.panel') }}</h2>
             </div>
             <ul class="p-2 space-y-0.5 max-h-[calc(100vh-8rem)] overflow-y-auto">
               <li v-for="item in adminNav" :key="item.to">

@@ -3,10 +3,16 @@ import type { User } from '~/types/generated'
 import { formatDate } from '~/utils/date'
 import { sanitizeHtml } from '~/utils/sanitize'
 
+const { t, locale } = useI18n()
+
 defineProps<{
   user: User
   isOwnProfile?: boolean
 }>()
+
+function formatDateLocalized (dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
+}
 </script>
 
 <template>
@@ -71,7 +77,7 @@ defineProps<{
             to="/settings/profile"
             class="button button-sm white no-underline"
           >
-            Edit Profile
+            {{ $t('profile.editProfile') }}
           </NuxtLink>
         </div>
       </div>
@@ -83,25 +89,25 @@ defineProps<{
 
       <!-- Stats -->
       <div class="pb-3 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500">
-        <span><strong class="text-gray-900">{{ user.postCount }}</strong> posts</span>
-        <span><strong class="text-gray-900">{{ user.commentCount }}</strong> comments</span>
-        <span title="Post Karma">
+        <span><strong class="text-gray-900">{{ user.postCount }}</strong> {{ $t('profile.posts') }}</span>
+        <span><strong class="text-gray-900">{{ user.commentCount }}</strong> {{ $t('profile.comments') }}</span>
+        <span :title="$t('profile.postKarma')">
           <svg class="w-3.5 h-3.5 inline-block text-orange-400" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
           </svg>
-          <strong class="text-gray-900">{{ user.postScore ?? 0 }}</strong> Post Karma
+          <strong class="text-gray-900">{{ user.postScore ?? 0 }}</strong> {{ $t('profile.postKarma') }}
         </span>
-        <span title="Comment Karma">
+        <span :title="$t('profile.commentKarma')">
           <svg class="w-3.5 h-3.5 inline-block text-blue-400" fill="currentColor" viewBox="0 0 20 20">
             <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
           </svg>
-          <strong class="text-gray-900">{{ user.commentScore ?? 0 }}</strong> Comment Karma
+          <strong class="text-gray-900">{{ user.commentScore ?? 0 }}</strong> {{ $t('profile.commentKarma') }}
         </span>
         <span class="flex items-center gap-1">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          Joined {{ formatDate(user.createdAt) }}
+          {{ $t('profile.joined') }} {{ formatDateLocalized(user.createdAt) }}
         </span>
       </div>
     </div>

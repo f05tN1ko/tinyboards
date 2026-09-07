@@ -4,7 +4,8 @@ import { useToast } from '~/composables/useToast'
 import { useSiteStore } from '~/stores/site'
 
 definePageMeta({ middleware: 'guards' })
-useHead({ title: 'Create Board' })
+const { t } = useI18n()
+useHead({ title: () => t('boards.create.title') })
 
 const toast = useToast()
 const siteStore = useSiteStore()
@@ -33,10 +34,10 @@ const CREATE_BOARD_MUTATION = `
 `
 
 function validateName (name: string): string | null {
-  if (!name) return 'Board name is required'
-  if (name.length > 50) return 'Board name must be 50 characters or less'
-  if (name.includes(' ')) return 'Board name cannot contain spaces'
-  if (!/^[a-zA-Z0-9_]+$/.test(name)) return 'Board name can only contain letters, numbers, and underscores'
+  if (!name) return t('boards.create.nameRequired')
+  if (name.length > 50) return t('boards.create.nameTooLong')
+  if (name.includes(' ')) return t('boards.create.nameHasSpaces')
+  if (!/^[a-zA-Z0-9_]+$/.test(name)) return t('boards.create.nameInvalidChars')
   return null
 }
 
@@ -50,7 +51,7 @@ async function handleSubmit (): Promise<void> {
   }
 
   if (!form.value.title.trim()) {
-    error.value = 'Board title is required'
+    error.value = t('boards.create.titleRequired')
     return
   }
 
@@ -72,12 +73,12 @@ async function handleSubmit (): Promise<void> {
     })
 
     if (result?.createBoard?.board) {
-      toast.success('Board created')
+      toast.success(t('boards.create.created'))
       await navigateTo(`/b/${result.createBoard.board.name}`)
     }
   } catch (err: unknown) {
     const gqlError = err as { message?: string }
-    error.value = gqlError.message ?? 'Failed to create board'
+    error.value = gqlError.message ?? t('boards.create.failed')
   } finally {
     loading.value = false
   }
@@ -87,13 +88,13 @@ async function handleSubmit (): Promise<void> {
 <template>
   <div class="max-w-2xl mx-auto px-4 py-6">
     <h1 class="text-xl font-bold text-gray-900 mb-6">
-      Create a Board
+      {{ $t('boards.create.heading') }}
     </h1>
 
     <form class="space-y-5" @submit.prevent="handleSubmit">
       <div>
         <label for="board-name" class="block text-sm font-medium text-gray-700 mb-1">
-          Board name
+          {{ $t('boards.create.name') }}
         </label>
         <div class="flex items-center">
           <span class="text-sm text-gray-400 mr-1">+</span>
@@ -102,46 +103,46 @@ async function handleSubmit (): Promise<void> {
             v-model="form.name"
             type="text"
             class="form-input flex-1"
-            placeholder="myboard"
+            :placeholder="$t('boards.create.namePlaceholder')"
             required
             maxlength="50"
             pattern="[a-zA-Z0-9_]+"
           >
         </div>
-        <p class="text-xs text-gray-400 mt-1">Letters, numbers, and underscores only. Cannot be changed later.</p>
+        <p class="text-xs text-gray-400 mt-1">{{ $t('boards.create.nameHint') }}</p>
       </div>
 
       <div>
         <label for="board-title" class="block text-sm font-medium text-gray-700 mb-1">
-          Display title
+          {{ $t('boards.create.displayTitle') }}
         </label>
         <input
           id="board-title"
           v-model="form.title"
           type="text"
           class="form-input"
-          placeholder="My Board"
+          :placeholder="$t('boards.create.displayTitlePlaceholder')"
           required
         >
       </div>
 
       <div>
         <label for="board-description" class="block text-sm font-medium text-gray-700 mb-1">
-          Description
-          <span class="text-gray-400 font-normal">(optional)</span>
+          {{ $t('boards.create.description') }}
+          <span class="text-gray-400 font-normal">{{ $t('boards.create.optional') }}</span>
         </label>
         <textarea
           id="board-description"
           v-model="form.description"
           class="form-input"
           rows="3"
-          placeholder="What is this board about?"
+          :placeholder="$t('boards.create.descriptionPlaceholder')"
         />
       </div>
 
       <!-- Board Mode Selector -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Board Mode</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('boards.create.boardMode') }}</label>
         <div class="grid grid-cols-2 gap-3">
           <button
             type="button"
@@ -153,10 +154,10 @@ async function handleSubmit (): Promise<void> {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">📰</span>
-              <span class="font-semibold text-sm text-gray-900">Feed Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('boards.create.feedTitle') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Share links, images, and text posts. Members vote on content.
+              {{ $t('boards.create.feedDesc') }}
             </p>
           </button>
           <button
@@ -169,10 +170,10 @@ async function handleSubmit (): Promise<void> {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">💬</span>
-              <span class="font-semibold text-sm text-gray-900">Forum Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('boards.create.forumTitle') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Threaded discussions. Great for Q&amp;A, support, or structured topics.
+              {{ $t('boards.create.forumDesc') }}
             </p>
           </button>
         </div>
@@ -181,7 +182,7 @@ async function handleSubmit (): Promise<void> {
       <div class="space-y-3">
         <label class="flex items-center gap-2">
           <input v-model="form.wikiEnabled" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Enable wiki for this board</span>
+          <span class="text-sm text-gray-700">{{ $t('boards.create.wiki') }}</span>
         </label>
 
         <label class="flex items-center gap-2">
@@ -191,7 +192,7 @@ async function handleSubmit (): Promise<void> {
             type="checkbox"
             class="form-checkbox"
           >
-          <span class="text-sm text-gray-700">Mark as NSFW</span>
+          <span class="text-sm text-gray-700">{{ $t('boards.create.nsfw') }}</span>
         </label>
       </div>
 
@@ -206,10 +207,10 @@ async function handleSubmit (): Promise<void> {
           :disabled="loading"
         >
           <CommonLoadingSpinner v-if="loading" size="sm" />
-          <span v-else>Create Board</span>
+          <span v-else>{{ $t('boards.create.submit') }}</span>
         </button>
         <NuxtLink to="/boards" class="button white no-underline">
-          Cancel
+          {{ $t('boards.create.cancel') }}
         </NuxtLink>
       </div>
     </form>

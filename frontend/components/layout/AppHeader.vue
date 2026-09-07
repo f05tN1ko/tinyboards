@@ -10,6 +10,7 @@ const authStore = useAuthStore()
 const siteStore = useSiteStore()
 const uiStore = useUIStore()
 const { logout } = useAuth()
+const { t } = useI18n()
 
 // Start notification polling (handles SSR safety internally)
 useNotificationPolling()
@@ -37,7 +38,7 @@ async function handleLogout () {
       <div class="flex items-center gap-4 min-w-0 flex-1">
         <button
           class="lg:hidden p-1.5 text-white/70 hover:text-white hover:bg-white/10 rounded"
-          aria-label="Toggle sidebar"
+          :aria-label="t('nav.toggleSidebar')"
           @click="uiStore.toggleSidebar()"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -66,11 +67,13 @@ async function handleLogout () {
 
       <!-- Right: Auth actions -->
       <div class="flex items-center gap-1.5 sm:gap-2">
+        <LayoutLanguageSwitcher />
+
         <!-- Search (hidden on mobile — in bottom nav) -->
         <NuxtLink
           to="/search"
           class="relative hidden lg:flex items-center justify-center w-9 h-9 text-white/70 rounded hover:bg-white/10 hover:text-white transition-colors no-underline"
-          aria-label="Search"
+          :aria-label="t('nav.search')"
         >
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -82,7 +85,7 @@ async function handleLogout () {
           <NuxtLink
             to="/submit"
             class="relative hidden lg:flex items-center justify-center w-9 h-9 text-white rounded hover:bg-white/10 transition-colors no-underline"
-            aria-label="Submit post"
+            :aria-label="t('nav.submitPost')"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -93,7 +96,7 @@ async function handleLogout () {
             v-if="authStore.isAdmin"
             to="/admin"
             class="relative hidden lg:flex items-center justify-center w-9 h-9 text-white/70 rounded hover:bg-white/10 hover:text-white transition-colors no-underline"
-            aria-label="Admin panel"
+            :aria-label="t('nav.admin')"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -104,7 +107,7 @@ async function handleLogout () {
           <NuxtLink
             to="/inbox"
             class="relative hidden lg:flex items-center justify-center w-9 h-9 text-white/70 rounded hover:bg-white/10 hover:text-white transition-colors no-underline"
-            aria-label="Inbox"
+            :aria-label="t('nav.inbox')"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -120,7 +123,7 @@ async function handleLogout () {
           <div class="relative">
             <button
               class="flex items-center gap-2 text-white hover:bg-white/10 rounded-lg px-2 py-1.5 transition-colors cursor-pointer"
-              aria-label="User menu"
+              :aria-label="t('nav.userMenu')"
               @click="toggleUserMenu"
               @keydown.escape="closeUserMenu"
             >
@@ -168,7 +171,7 @@ async function handleLogout () {
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  Profile
+                  {{ t('nav.profile') }}
                 </NuxtLink>
 
                 <NuxtLink
@@ -180,7 +183,7 @@ async function handleLogout () {
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                   </svg>
-                  Settings
+                  {{ t('nav.settings') }}
                 </NuxtLink>
 
                 <div class="border-t border-gray-100 mt-1 pt-1">
@@ -191,7 +194,7 @@ async function handleLogout () {
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                     </svg>
-                    Log out
+                    {{ t('nav.logOut') }}
                   </button>
                 </div>
               </div>
@@ -203,13 +206,13 @@ async function handleLogout () {
             to="/login"
             class="hidden sm:inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white/90 hover:text-white hover:bg-white/10 rounded-lg transition-colors no-underline"
           >
-            Log in
+            {{ t('nav.logIn') }}
           </NuxtLink>
           <NuxtLink
             to="/register"
             class="inline-flex items-center px-3 py-1.5 text-sm font-semibold text-primary bg-white hover:bg-white/90 rounded-lg transition-colors no-underline"
           >
-            Sign up
+            {{ t('nav.signUp') }}
           </NuxtLink>
         </template>
       </div>

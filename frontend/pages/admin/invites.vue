@@ -2,8 +2,10 @@
 import { ref } from 'vue'
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Invites' })
+useHead({ title: () => t('admin.invites.title') })
 
 interface SiteInviteGql {
   id: string
@@ -63,7 +65,7 @@ async function copyCode (invite: SiteInviteGql) {
 fetchInvites()
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString()
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 </script>
 
@@ -71,14 +73,14 @@ function formatDate (dateStr: string): string {
   <div>
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-semibold text-gray-900">
-        Invite Codes
+        {{ $t('admin.invites.heading') }}
       </h2>
       <button
         class="button primary"
         :disabled="generateLoading"
         @click="generateInvite"
       >
-        {{ generateLoading ? 'Generating...' : 'Generate Invite' }}
+        {{ generateLoading ? $t('admin.invites.generating') : $t('admin.invites.generate') }}
       </button>
     </div>
 
@@ -102,7 +104,7 @@ function formatDate (dateStr: string): string {
               {{ invite.verificationCode }}
             </code>
             <div class="text-xs text-gray-500 mt-1">
-              Created {{ formatDate(invite.createdAt) }}
+              {{ $t('admin.invites.created', { date: formatDate(invite.createdAt) }) }}
             </div>
           </div>
 
@@ -110,14 +112,14 @@ function formatDate (dateStr: string): string {
             class="button button-sm white"
             @click="copyCode(invite)"
           >
-            {{ copiedId === invite.id ? 'Copied!' : 'Copy' }}
+            {{ copiedId === invite.id ? $t('admin.invites.copied') : $t('admin.invites.copy') }}
           </button>
         </div>
       </div>
     </div>
 
     <div v-else class="py-12 text-center text-sm text-gray-500">
-      No invite codes. Click "Generate Invite" to create one.
+      {{ $t('admin.invites.none') }}
     </div>
   </div>
 </template>

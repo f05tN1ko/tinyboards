@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { useWiki } from '~/composables/useWiki'
 import { useGraphQL } from '~/composables/useGraphQL'
+import { formatDate as fmtDate } from '~/utils/date'
 
 const route = useRoute()
 const boardName = route.params.board as string
 const slug = route.params.slug as string
+const { t } = useI18n()
 
-useHead({ title: `Revisions - ${slug}` })
+useHead({ title: () => t('board.wiki.revisionsTitle', { slug }) })
 
 const { page, fetchPage, fetchRevisions } = useWiki()
 const loading = ref(true)
@@ -32,16 +34,6 @@ onMounted(async () => {
   revisions.value = await fetchRevisions(page.value.id)
   loading.value = false
 })
-
-function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
-}
 </script>
 
 <template>
@@ -49,19 +41,19 @@ function formatDate (dateStr: string): string {
     <nav class="text-sm text-gray-500 mb-4">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">Wiki</NuxtLink>
+      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">{{ $t('board.wiki.breadcrumbWiki') }}</NuxtLink>
       <span class="mx-1">/</span>
       <NuxtLink :to="`/b/${boardName}/wiki/${slug}`" class="hover:text-gray-700">{{ slug }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span>Revisions</span>
+      <span>{{ $t('board.wiki.revisions') }}</span>
     </nav>
 
-    <h1 class="text-lg font-semibold text-gray-900 mb-6">Revision History</h1>
+    <h1 class="text-lg font-semibold text-gray-900 mb-6">{{ $t('board.wiki.revisionHistory') }}</h1>
 
     <CommonLoadingSpinner v-if="loading" />
 
     <div v-else-if="revisions.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-500">No revision history available.</p>
+      <p class="text-sm text-gray-500">{{ $t('board.wiki.noRevisions') }}</p>
     </div>
 
     <div v-else class="space-y-3">
@@ -73,16 +65,16 @@ function formatDate (dateStr: string): string {
         <div class="flex items-start justify-between">
           <div>
             <p class="text-sm font-medium text-gray-900">
-              Revision #{{ revision.revisionNumber }}
+              {{ $t('board.wiki.revisionNumber', { n: revision.revisionNumber }) }}
             </p>
             <p v-if="revision.editSummary" class="text-sm text-gray-600 mt-0.5">
               {{ revision.editSummary }}
             </p>
             <p class="text-xs text-gray-500 mt-1">
               <template v-if="revision.creator">
-                by {{ revision.creator.name }}
+                {{ $t('board.wiki.by') }} {{ revision.creator.name }}
               </template>
-              &middot; {{ formatDate(revision.createdAt) }}
+              &middot; {{ fmtDate(revision.createdAt) }}
             </p>
           </div>
         </div>

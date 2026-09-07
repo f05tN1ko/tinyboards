@@ -4,8 +4,10 @@ import { useGraphQL } from '~/composables/useGraphQL'
 import { useToast } from '~/composables/useToast'
 import { useAuthStore } from '~/stores/auth'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Users' })
+useHead({ title: () => t('admin.users.title') })
 
 interface User {
   id: string
@@ -63,7 +65,7 @@ async function fetchUsers () {
 }
 
 async function banUser (user: User) {
-  if (!confirm(`Are you sure you want to ban ${user.displayName || user.name}?`)) return
+  if (!confirm(t('admin.users.confirmBan', { name: user.displayName || user.name }))) return
 
   const result = await executeMutation(`
     mutation BanUserFromSite($input: BanUserInput!) {
@@ -72,13 +74,13 @@ async function banUser (user: User) {
   `, { variables: { input: { userId: user.id } } })
 
   if (result) {
-    toast.success(`${user.name} has been banned`)
+    toast.success(t('admin.users.bannedToast', { name: user.name }))
     await fetchUsers()
   }
 }
 
 async function unbanUser (user: User) {
-  if (!confirm(`Unban ${user.displayName || user.name}?`)) return
+  if (!confirm(t('admin.users.confirmUnban', { name: user.displayName || user.name }))) return
 
   const result = await executeMutation(`
     mutation UnbanUserFromSite($userId: ID!, $reason: String) {
@@ -87,7 +89,7 @@ async function unbanUser (user: User) {
   `, { variables: { userId: user.id } })
 
   if (result) {
-    toast.success(`${user.name} has been unbanned`)
+    toast.success(t('admin.users.unbannedToast', { name: user.name }))
     await fetchUsers()
   }
 }
@@ -113,7 +115,7 @@ watch(page, fetchUsers)
 fetchUsers()
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString()
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 </script>
 
@@ -121,7 +123,7 @@ function formatDate (dateStr: string): string {
   <div>
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-semibold text-gray-900">
-        User Management
+        {{ $t('admin.users.heading') }}
       </h2>
     </div>
 
@@ -130,7 +132,7 @@ function formatDate (dateStr: string): string {
         v-model="searchTerm"
         type="text"
         class="form-input w-full max-w-sm"
-        placeholder="Search users by name..."
+        :placeholder="$t('admin.users.searchPlaceholder')"
         @input="onSearchInput"
         @keydown.enter="onSearch"
       >
@@ -149,12 +151,12 @@ function formatDate (dateStr: string): string {
         <table class="w-full text-sm text-left">
           <thead class="text-xs text-gray-500 uppercase border-b">
             <tr>
-              <th class="py-3 px-4">User</th>
-              <th class="py-3 px-4">Posts</th>
-              <th class="py-3 px-4">Comments</th>
-              <th class="py-3 px-4">Status</th>
-              <th class="py-3 px-4">Joined</th>
-              <th class="py-3 px-4">Actions</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colUser') }}</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colPosts') }}</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colComments') }}</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colStatus') }}</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colJoined') }}</th>
+              <th class="py-3 px-4">{{ $t('admin.users.colActions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -191,19 +193,19 @@ function formatDate (dateStr: string): string {
                   v-if="user.isBanned"
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
                 >
-                  Banned
+                  {{ $t('admin.users.banned') }}
                 </span>
                 <span
                   v-else-if="user.isAdmin"
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
                 >
-                  Admin (L{{ user.adminLevel }})
+                  {{ $t('admin.users.adminLevel', { level: user.adminLevel }) }}
                 </span>
                 <span
                   v-else
                   class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800"
                 >
-                  Active
+                  {{ $t('admin.users.active') }}
                 </span>
               </td>
               <td class="py-3 px-4 text-gray-600">
@@ -217,7 +219,7 @@ function formatDate (dateStr: string): string {
                     :disabled="mutationLoading"
                     @click="unbanUser(user)"
                   >
-                    Unban
+                    {{ $t('admin.users.unban') }}
                   </button>
                   <button
                     v-else
@@ -225,13 +227,13 @@ function formatDate (dateStr: string): string {
                     :disabled="mutationLoading"
                     @click="banUser(user)"
                   >
-                    Ban
+                    {{ $t('admin.users.ban') }}
                   </button>
                   <NuxtLink
                     :to="`/@${user.name}`"
                     class="button button-sm text-gray-600 hover:text-gray-800 hover:bg-gray-100 no-underline"
                   >
-                    Profile
+                    {{ $t('admin.users.profile') }}
                   </NuxtLink>
                 </div>
               </td>
@@ -249,7 +251,7 @@ function formatDate (dateStr: string): string {
     </div>
 
     <div v-else class="py-12 text-center text-sm text-gray-500">
-      No users found.
+      {{ $t('admin.users.noUsers') }}
     </div>
   </div>
 </template>

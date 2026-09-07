@@ -4,14 +4,13 @@ import { useToast } from '~/composables/useToast'
 import { validateCss, CSS_SNIPPET_CATEGORIES } from '~/utils/css-validator'
 import type { CssSnippet } from '~/utils/css-validator'
 
+const { t } = useI18n()
+
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Custom CSS' })
+useHead({ title: () => t('admin.css.title') })
 
 const toast = useToast()
 
-// ---------------------------------------------------------------------------
-// Data fetching
-// ---------------------------------------------------------------------------
 const SITE_CSS_QUERY = `
   query GetSiteCss {
     site {
@@ -33,9 +32,6 @@ const UPDATE_CSS_MUTATION = `
 const { execute, loading } = useGraphQL<{ site: { customCss: string | null; customCssEnabled: boolean } }>()
 const { execute: executeMutation, loading: saving } = useGraphQLMutation()
 
-// ---------------------------------------------------------------------------
-// State
-// ---------------------------------------------------------------------------
 const cssCode = ref('')
 const cssEnabled = ref(false)
 const activeTab = ref<'editor' | 'wizard' | 'preview'>('wizard')
@@ -43,14 +39,10 @@ const expandedCategory = ref<string | null>(null)
 const previewCss = ref('')
 const showPreview = ref(false)
 
-// Validation
 const validation = computed(() => validateCss(cssCode.value))
 const charCount = computed(() => new Blob([cssCode.value]).size)
 const maxBytes = 50 * 1024
 
-// ---------------------------------------------------------------------------
-// Load current CSS
-// ---------------------------------------------------------------------------
 onMounted(async () => {
   const result = await execute(SITE_CSS_QUERY)
   if (result?.site) {
@@ -59,16 +51,13 @@ onMounted(async () => {
   }
 })
 
-// ---------------------------------------------------------------------------
-// Actions
-// ---------------------------------------------------------------------------
 function insertSnippet (snippet: CssSnippet) {
   if (cssCode.value && !cssCode.value.endsWith('\n')) {
     cssCode.value += '\n'
   }
   cssCode.value += `\n/* ${snippet.name} */\n${snippet.css}\n`
   activeTab.value = 'editor'
-  toast.success(`Inserted: ${snippet.name}`)
+  toast.success(t('admin.css.insertedToast', { name: snippet.name }))
 }
 
 function toggleCategory (name: string) {
@@ -83,12 +72,12 @@ function updatePreview () {
 
 function clearCss () {
   cssCode.value = ''
-  toast.info('CSS cleared')
+  toast.info(t('admin.css.clearedToast'))
 }
 
 async function saveCss () {
   if (!validation.value.valid) {
-    toast.error('Please fix CSS errors before saving')
+    toast.error(t('admin.css.saveError'))
     return
   }
 
@@ -102,8 +91,7 @@ async function saveCss () {
   })
 
   if (result) {
-    toast.success('Custom CSS saved successfully')
-    // Reload site store so changes take effect immediately
+    toast.success(t('admin.css.saveSuccess'))
     const siteStore = useSiteStore()
     if (siteStore.site) {
       siteStore.site.customCss = cssCode.value || null
@@ -112,7 +100,12 @@ async function saveCss () {
   }
 }
 
-// Category icon mapping
+const tabs = computed(() => [
+  { id: 'wizard', label: t('admin.css.tabWizard') },
+  { id: 'editor', label: t('admin.css.tabEditor') },
+  { id: 'preview', label: t('admin.css.tabPreview') },
+] as const)
+
 function getCategoryIcon (icon: string): string {
   const icons: Record<string, string> = {
     'rectangle-stack': '\u25A1',
@@ -134,17 +127,17 @@ function getCategoryIcon (icon: string): string {
     <div class="flex items-center justify-between mb-6">
       <div>
         <h2 class="text-lg font-semibold text-gray-900">
-          Custom CSS
+          {{ $t('admin.css.heading') }}
         </h2>
         <p class="text-sm text-gray-500 mt-1">
-          Add custom styles to your site. Board moderators can also add board-level CSS that overrides these styles.
+          {{ $t('admin.css.description') }}
         </p>
       </div>
 
       <!-- Enable toggle -->
       <label class="flex items-center gap-3 cursor-pointer select-none">
         <span class="text-sm font-medium" :class="cssEnabled ? 'text-green-700' : 'text-gray-500'">
-          {{ cssEnabled ? 'Enabled' : 'Disabled' }}
+          {{ cssEnabled ? $t('admin.css.enabled') : $t('admin.css.disabled') }}
         </span>
         <button
           type="button"
@@ -170,12 +163,18 @@ function getCategoryIcon (icon: string): string {
         <div class="flex gap-3">
           <div class="text-blue-500 text-lg shrink-0">&#9432;</div>
           <div class="text-sm text-blue-800">
-            <p class="font-medium mb-1">Safety Information</p>
+            <p class="font-medium mb-1">{{ $t('admin.css.safetyInfo') }}</p>
             <ul class="list-disc ml-4 space-y-0.5 text-blue-700">
-              <li>CSS is sanitized on the server — dangerous patterns are automatically blocked</li>
-              <li><code class="text-xs bg-blue-100 rounded px-1">@import</code>, <code class="text-xs bg-blue-100 rounded px-1">url()</code>, <code class="text-xs bg-blue-100 rounded px-1">expression()</code>, and <code class="text-xs bg-blue-100 rounded px-1">position: fixed</code> are not allowed</li>
-              <li>Maximum size: 50 KB. Use the wizard tab for quick, safe customizations</li>
-              <li><code class="text-xs bg-blue-100 rounded px-1">@media</code> queries and <code class="text-xs bg-blue-100 rounded px-1">@keyframes</code> animations are allowed</li>
+              <li>{{ $t('admin.css.safety1') }}</li>
+              <li>
+                <code class="text-xs bg-blue-100 rounded px-1">@import</code>,
+                <code class="text-xs bg-blue-100 rounded px-1">url()</code>,
+                <code class="text-xs bg-blue-100 rounded px-1">expression()</code>,
+                <code class="text-xs bg-blue-100 rounded px-1">position: fixed</code>
+                — {{ $t('admin.css.safety2') }}
+              </li>
+              <li>{{ $t('admin.css.safety3') }}</li>
+              <li>{{ $t('admin.css.safety4') }}</li>
             </ul>
           </div>
         </div>
@@ -184,28 +183,22 @@ function getCategoryIcon (icon: string): string {
       <!-- Tabs -->
       <div class="flex gap-1 border-b border-gray-200 mb-4">
         <button
-          v-for="tab in [
-            { id: 'wizard', label: 'Style Wizard' },
-            { id: 'editor', label: 'CSS Editor' },
-            { id: 'preview', label: 'Live Preview' },
-          ]"
+          v-for="tab in tabs"
           :key="tab.id"
           :class="activeTab === tab.id
             ? 'border-primary text-primary'
             : 'border-transparent text-gray-500 hover:text-gray-700'"
           class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
-          @click="activeTab = tab.id as 'editor' | 'wizard' | 'preview'"
+          @click="activeTab = tab.id"
         >
           {{ tab.label }}
         </button>
       </div>
 
-      <!-- ============================================ -->
       <!-- WIZARD TAB -->
-      <!-- ============================================ -->
       <div v-if="activeTab === 'wizard'" class="space-y-3">
         <p class="text-sm text-gray-600 mb-4">
-          Click a snippet to add it to your CSS. You can then customize it in the editor tab.
+          {{ $t('admin.css.wizardHint') }}
         </p>
 
         <div
@@ -213,21 +206,19 @@ function getCategoryIcon (icon: string): string {
           :key="category.name"
           class="border border-gray-200 rounded-lg overflow-hidden"
         >
-          <!-- Category header -->
           <button
             class="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
             @click="toggleCategory(category.name)"
           >
             <span class="text-lg w-6 text-center opacity-70">{{ getCategoryIcon(category.icon) }}</span>
             <span class="font-medium text-sm text-gray-900 flex-1">{{ category.name }}</span>
-            <span class="text-xs text-gray-400">{{ category.snippets.length }} snippets</span>
+            <span class="text-xs text-gray-400">{{ $t('admin.css.snippets', { count: category.snippets.length }) }}</span>
             <span
               class="text-gray-400 transition-transform duration-200"
               :class="expandedCategory === category.name ? 'rotate-90' : ''"
             >&#9656;</span>
           </button>
 
-          <!-- Snippets -->
           <div v-if="expandedCategory === category.name" class="border-t border-gray-100 divide-y divide-gray-100">
             <div
               v-for="snippet in category.snippets"
@@ -244,7 +235,7 @@ function getCategoryIcon (icon: string): string {
                   class="shrink-0 button primary button-sm"
                   @click="insertSnippet(snippet)"
                 >
-                  Insert
+                  {{ $t('admin.css.insert') }}
                 </button>
               </div>
             </div>
@@ -252,18 +243,15 @@ function getCategoryIcon (icon: string): string {
         </div>
       </div>
 
-      <!-- ============================================ -->
       <!-- EDITOR TAB -->
-      <!-- ============================================ -->
       <div v-if="activeTab === 'editor'" class="space-y-4">
-        <!-- Toolbar -->
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <button class="button white button-sm" @click="updatePreview">
-              Preview
+              {{ $t('admin.css.previewBtn') }}
             </button>
             <button class="button white button-sm text-red-600" :disabled="!cssCode" @click="clearCss">
-              Clear All
+              {{ $t('admin.css.clearAll') }}
             </button>
           </div>
           <div class="text-xs text-gray-400">
@@ -271,78 +259,63 @@ function getCategoryIcon (icon: string): string {
           </div>
         </div>
 
-        <!-- Editor -->
         <div class="relative">
           <textarea
             v-model="cssCode"
             class="w-full h-96 font-mono text-sm bg-gray-900 text-green-400 rounded-lg p-4 border border-gray-700 focus:border-primary focus:ring-1 focus:ring-primary resize-y leading-relaxed"
-            placeholder="/* Write your custom CSS here */
-
-.post-card {
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}"
             spellcheck="false"
             autocomplete="off"
             autocorrect="off"
             autocapitalize="off"
           />
-          <!-- Line count indicator -->
           <div class="absolute bottom-3 right-3 text-xs text-gray-500 bg-gray-800 rounded px-2 py-1">
-            {{ cssCode.split('\n').length }} lines
+            {{ $t('admin.css.lines', { count: cssCode.split('\n').length }) }}
           </div>
         </div>
 
-        <!-- Validation feedback -->
         <div v-if="cssCode && !validation.valid" class="rounded-lg bg-red-50 border border-red-200 p-3">
-          <div class="text-sm font-medium text-red-800 mb-1">Validation Errors</div>
+          <div class="text-sm font-medium text-red-800 mb-1">{{ $t('admin.css.validationErrors') }}</div>
           <ul class="list-disc ml-4 text-sm text-red-700 space-y-0.5">
             <li v-for="(err, i) in validation.errors" :key="i">{{ err }}</li>
           </ul>
         </div>
 
         <div v-if="cssCode && validation.warnings.length > 0" class="rounded-lg bg-yellow-50 border border-yellow-200 p-3">
-          <div class="text-sm font-medium text-yellow-800 mb-1">Warnings</div>
+          <div class="text-sm font-medium text-yellow-800 mb-1">{{ $t('admin.css.warnings') }}</div>
           <ul class="list-disc ml-4 text-sm text-yellow-700 space-y-0.5">
             <li v-for="(warn, i) in validation.warnings" :key="i">{{ warn }}</li>
           </ul>
         </div>
 
         <div v-if="cssCode && validation.valid && validation.warnings.length === 0" class="flex items-center gap-2 text-sm text-green-700">
-          <span>&#10003;</span> CSS is valid
+          <span>&#10003;</span> {{ $t('admin.css.valid') }}
         </div>
       </div>
 
-      <!-- ============================================ -->
       <!-- PREVIEW TAB -->
-      <!-- ============================================ -->
       <div v-if="activeTab === 'preview'" class="space-y-4">
         <div class="flex items-center justify-between">
           <p class="text-sm text-gray-500">
-            This preview shows how your custom CSS will affect the page. Changes are temporary until you save.
+            {{ $t('admin.css.previewHint') }}
           </p>
           <button class="button white button-sm" @click="updatePreview">
-            Refresh Preview
+            {{ $t('admin.css.refreshPreview') }}
           </button>
         </div>
 
-        <!-- Preview frame -->
         <div class="border border-gray-200 rounded-lg overflow-hidden">
-          <!-- Mini header preview -->
           <div class="px-4 py-3 bg-primary text-white text-sm font-medium flex items-center gap-2 preview-header">
             <span class="w-6 h-6 rounded bg-white/20" />
-            <span>Site Header Preview</span>
+            <span>{{ $t('admin.css.headerPreview') }}</span>
             <span class="ml-auto flex gap-2">
-              <span class="text-xs opacity-70">Home</span>
-              <span class="text-xs opacity-70">Boards</span>
-              <span class="text-xs opacity-70">Search</span>
+              <span class="text-xs opacity-70">{{ $t('nav.home') }}</span>
+              <span class="text-xs opacity-70">{{ $t('nav.boards') }}</span>
+              <span class="text-xs opacity-70">{{ $t('nav.search') }}</span>
             </span>
           </div>
 
-          <!-- Mini content preview -->
           <div class="p-4 bg-gray-100 preview-body" style="min-height: 300px">
             <div class="max-w-2xl mx-auto space-y-3">
-              <!-- Post card preview -->
               <div class="post-card bg-white rounded-lg border border-gray-200 p-4">
                 <div class="flex gap-3">
                   <div class="flex flex-col items-center gap-1">
@@ -351,36 +324,24 @@ function getCategoryIcon (icon: string): string {
                     <button class="vote-button text-gray-400 hover:text-red-500 text-lg">&#9660;</button>
                   </div>
                   <div class="flex-1">
-                    <div class="post-title text-base font-semibold text-gray-900">Example Post Title</div>
-                    <div class="text-xs text-gray-500 mt-1">Posted by <span class="text-primary">u/example</span> in <span class="font-medium">b/general</span> &middot; 2h ago</div>
-                    <div class="post-body text-sm text-gray-700 mt-2">This is a preview of how posts will look with your custom CSS applied. The styles you write will affect the real page.</div>
+                    <div class="post-title text-base font-semibold text-gray-900">{{ $t('admin.css.mockPostTitle') }}</div>
+                    <div class="text-xs text-gray-500 mt-1">{{ $t('common.by') }} <span class="text-primary">{{ $t('admin.css.mockAuthor') }}</span> {{ $t('nav.boards') }} <span class="font-medium">b/general</span> &middot; 2h</div>
+                    <div class="post-body text-sm text-gray-700 mt-2">{{ $t('admin.css.description') }}</div>
                   </div>
                 </div>
               </div>
 
-              <!-- Comment preview -->
               <div class="bg-white rounded-lg border border-gray-200 p-4">
-                <div class="text-xs text-gray-500 mb-2">Comments</div>
+                <div class="text-xs text-gray-500 mb-2">{{ $t('common.comments') }}</div>
                 <div class="comment-body text-sm text-gray-700 pl-3 border-l-2 border-primary/30 comment-thread-line">
-                  <div class="text-xs text-gray-500 mb-1"><span class="text-primary font-medium">u/commenter</span> &middot; 1h ago</div>
-                  This is an example comment to preview your CSS changes.
-                </div>
-              </div>
-
-              <!-- Sidebar preview -->
-              <div class="sidebar bg-white rounded-lg border border-gray-200 p-4">
-                <div class="text-sm font-medium text-gray-900 mb-2">Sidebar</div>
-                <div class="text-xs text-gray-500">
-                  <a href="#" class="text-primary hover:underline">Board Rules</a> &middot;
-                  <a href="#" class="text-primary hover:underline">Wiki</a> &middot;
-                  <a href="#" class="text-primary hover:underline">Moderators</a>
+                  <div class="text-xs text-gray-500 mb-1"><span class="text-primary font-medium">{{ $t('admin.css.mockCommenter') }}</span> &middot; 1h</div>
+                  {{ $t('admin.css.description') }}
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Inject preview CSS -->
         <Teleport to="head">
           <component :is="'style'" v-if="showPreview" id="tb-css-preview">
             {{ previewCss }}
@@ -388,19 +349,17 @@ function getCategoryIcon (icon: string): string {
         </Teleport>
       </div>
 
-      <!-- ============================================ -->
       <!-- SAVE BAR -->
-      <!-- ============================================ -->
       <div class="flex items-center justify-between pt-6 mt-6 border-t border-gray-200">
         <div class="text-sm text-gray-500">
           <template v-if="cssEnabled && cssCode">
-            CSS will be injected into every page for all visitors.
+            {{ $t('admin.css.saveBarActive') }}
           </template>
           <template v-else-if="!cssEnabled && cssCode">
-            CSS is saved but disabled. Enable it with the toggle above.
+            {{ $t('admin.css.saveBarDisabled') }}
           </template>
           <template v-else>
-            No custom CSS configured.
+            {{ $t('admin.css.saveBarEmpty') }}
           </template>
         </div>
         <button
@@ -408,24 +367,22 @@ function getCategoryIcon (icon: string): string {
           :disabled="saving || (!validation.valid && !!cssCode)"
           @click="saveCss"
         >
-          {{ saving ? 'Saving...' : 'Save Custom CSS' }}
+          {{ saving ? $t('common.saving') : $t('admin.css.save') }}
         </button>
       </div>
 
-      <!-- ============================================ -->
       <!-- HELP / CASCADE EXPLANATION -->
-      <!-- ============================================ -->
       <div class="mt-8 rounded-lg bg-gray-50 border border-gray-200 p-5">
-        <h3 class="text-sm font-semibold text-gray-900 mb-3">How CSS Cascading Works</h3>
+        <h3 class="text-sm font-semibold text-gray-900 mb-3">{{ $t('admin.css.cascadeTitle') }}</h3>
         <div class="text-sm text-gray-600 space-y-2">
-          <p>Custom CSS is applied in layers, with later layers overriding earlier ones:</p>
+          <p>{{ $t('admin.css.cascadeIntro') }}</p>
           <ol class="list-decimal ml-5 space-y-1">
-            <li><strong>Default Theme</strong> &mdash; The built-in theme (light, dark, ocean, etc.)</li>
-            <li><strong>Site Custom CSS</strong> (this page) &mdash; Applied globally on every page</li>
-            <li><strong>Board Custom CSS</strong> &mdash; Applied only when viewing that specific board, overrides site CSS</li>
+            <li><strong>{{ $t('admin.css.cascade1') }}</strong></li>
+            <li><strong>{{ $t('admin.css.cascade2') }}</strong></li>
+            <li><strong>{{ $t('admin.css.cascade3') }}</strong></li>
           </ol>
           <p class="text-gray-500 mt-3">
-            Board moderators with the Appearance permission can add custom CSS for their board via Board Settings &rarr; Appearance.
+            {{ $t('admin.css.cascadeNote') }}
           </p>
         </div>
       </div>

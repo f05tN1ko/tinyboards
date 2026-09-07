@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+const { t } = useI18n()
+
 const props = defineProps<{
   modelValue: string
   options?: Array<{ label: string; value: string }>
@@ -12,18 +14,18 @@ const emit = defineEmits<{
 
 const isOpen = ref(false)
 
-const defaultOptions = [
-  { label: 'Hot', value: 'hot' },
-  { label: 'New', value: 'new' },
-  { label: 'Top', value: 'topDay' },
-  { label: 'Rising', value: 'active' },
-  { label: 'Controversial', value: 'mostComments' },
-]
+const defaultOptions = computed(() => [
+  { label: t('sort.hot'), value: 'hot' },
+  { label: t('sort.new'), value: 'new' },
+  { label: t('sort.top'), value: 'topDay' },
+  { label: t('sort.rising'), value: 'active' },
+  { label: t('sort.controversial'), value: 'mostComments' },
+])
 
-const currentOptions = computed(() => props.options ?? defaultOptions)
+const currentOptions = computed(() => props.options ?? defaultOptions.value)
 const currentLabel = computed(() => {
   const opt = currentOptions.value.find(o => o.value === props.modelValue)
-  return opt?.label ?? 'Sort'
+  return opt?.label ?? t('sort.label')
 })
 
 function select (value: string): void {
@@ -42,7 +44,7 @@ function select (value: string): void {
       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
       </svg>
-      Sort: <span class="font-medium">{{ currentLabel }}</span>
+      {{ $t('sort.sortPrefix') }} <span class="font-medium">{{ currentLabel }}</span>
       <svg
         class="w-3 h-3 ml-0.5 transition-transform duration-150"
         :class="isOpen ? 'rotate-180' : ''"

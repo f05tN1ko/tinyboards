@@ -2,6 +2,7 @@
 import { useSiteStore } from '~/stores/site'
 
 const siteStore = useSiteStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -9,20 +10,20 @@ const siteStore = useSiteStore()
     <div class="max-w-8xl mx-auto flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 text-xs text-gray-500">
       <div class="flex items-center gap-2 -mx-1 flex-wrap">
         <NuxtLink to="/help" class="px-2 py-1 hover:text-primary no-underline text-gray-400 transition-colors flex-shrink-0">
-          Help
+          {{ t('footer.help') }}
         </NuxtLink>
         <NuxtLink to="/help/about" class="px-2 py-1 hover:text-primary no-underline text-gray-400 transition-colors flex-shrink-0">
-          About
+          {{ t('footer.about') }}
         </NuxtLink>
         <NuxtLink to="/help/terms" class="px-2 py-1 hover:text-primary no-underline text-gray-400 transition-colors flex-shrink-0">
-          Terms
+          {{ t('footer.terms') }}
         </NuxtLink>
         <NuxtLink to="/help/privacy" class="px-2 py-1 hover:text-primary no-underline text-gray-400 transition-colors flex-shrink-0">
-          Privacy
+          {{ t('footer.privacy') }}
         </NuxtLink>
       </div>
       <div class="flex items-center gap-1.5 text-gray-400 mt-2 sm:mt-0 sm:ml-auto text-center sm:text-left">
-        <span>Powered by</span>
+        <span>{{ t('footer.poweredBy') }}</span>
         <span class="text-primary/50 hover:text-primary font-semibold">{{ siteStore.name || 'TinyBoards' }}</span>
       </div>
     </div>

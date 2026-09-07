@@ -3,6 +3,8 @@ import { useAuthStore } from '~/stores/auth'
 import { useGraphQL } from '~/composables/useGraphQL'
 import type { Post } from '~/types/generated'
 
+const { t } = useI18n()
+
 definePageMeta({ middleware: 'guards' })
 
 const route = useRoute()
@@ -83,7 +85,7 @@ if (isOwnProfile.value) {
     <template v-if="isOwnProfile">
       <div class="bg-white rounded-lg border border-gray-200 px-3 py-2 flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold text-gray-900">
-          Saved Posts
+          {{ $t('profile.savedPosts') }}
         </h2>
         <CommonSortSelector v-model="sort" @update:model-value="setSort" />
       </div>
@@ -105,14 +107,14 @@ if (isOwnProfile.value) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-600 mb-1">No saved posts yet</p>
-        <p class="text-xs text-gray-400">Click the save button on any post to bookmark it here.</p>
+        <p class="text-sm font-medium text-gray-600 mb-1">{{ $t('profile.noSavedPosts') }}</p>
+        <p class="text-xs text-gray-400">{{ $t('profile.noSavedHint') }}</p>
       </div>
     </template>
     <CommonErrorDisplay
       v-else
-      title="Not available"
-      message="You can only view your own saved items."
+      :title="$t('profile.notAvailable')"
+      :message="$t('profile.ownSavedOnly')"
       :retryable="false"
     />
   </div>

@@ -4,6 +4,7 @@ import { useSiteStore } from '~/stores/site'
 
 const authStore = useAuthStore()
 const siteStore = useSiteStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -24,14 +25,14 @@ const siteStore = useSiteStore()
         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Create Post
+        {{ t('board.feed.createPost') }}
       </NuxtLink>
     </div>
 
     <!-- Subscribed boards (when in sidebar slot) -->
     <div v-if="authStore.isLoggedIn && authStore.subscribedBoards.length > 0">
       <h3 class="font-bold leading-5 text-base text-gray-900 mb-3 pb-1 border-b">
-        My Boards
+        {{ t('board.feed.myBoards') }}
       </h3>
       <ul class="space-y-1">
         <li v-for="board in authStore.subscribedBoards" :key="board.name">

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+const { t } = useI18n()
+
 const props = defineProps<{
   username: string
   isOwnProfile?: boolean
@@ -16,15 +18,15 @@ interface TabItem {
 const tabs = computed<TabItem[]>(() => {
   const base = `/@${props.username}`
   const items: TabItem[] = [
-    { label: 'Overview', to: base, icon: 'overview' },
-    { label: 'Posts', to: `${base}/posts`, icon: 'posts' },
-    { label: 'Comments', to: `${base}/comments`, icon: 'comments' },
+    { label: t('profile.tabs.overview'), to: base, icon: 'overview' },
+    { label: t('profile.tabs.posts'), to: `${base}/posts`, icon: 'posts' },
+    { label: t('profile.tabs.comments'), to: `${base}/comments`, icon: 'comments' },
   ]
 
   if (props.isOwnProfile) {
     items.push(
-      { label: 'Saved', to: `${base}/saved`, icon: 'saved', ownOnly: true },
-      { label: 'Following', to: `${base}/following`, icon: 'following', ownOnly: true },
+      { label: t('profile.tabs.saved'), to: `${base}/saved`, icon: 'saved', ownOnly: true },
+      { label: t('profile.tabs.following'), to: `${base}/following`, icon: 'following', ownOnly: true },
     )
   }
 

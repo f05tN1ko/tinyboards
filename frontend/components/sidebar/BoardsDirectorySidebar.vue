@@ -6,6 +6,7 @@ import type { Board } from '~/types/generated'
 
 const authStore = useAuthStore()
 const siteStore = useSiteStore()
+const { t } = useI18n()
 
 const TRENDING_BOARDS_QUERY = `
   query TrendingBoards($limit: Int, $sort: SortType) {
@@ -40,7 +41,7 @@ await fetchTrending()
     <!-- Your boards -->
     <div v-if="authStore.isLoggedIn && authStore.subscribedBoards?.length > 0">
       <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
-        Your Boards
+        {{ $t('sidebar.yourBoards') }}
       </h4>
       <ul class="space-y-0.5">
         <li v-for="board in authStore.subscribedBoards" :key="board.name">
@@ -62,7 +63,7 @@ await fetchTrending()
     <!-- Trending boards -->
     <div v-if="trendingBoards.length > 0">
       <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
-        Trending
+        {{ $t('sidebar.trending') }}
       </h4>
       <ol class="space-y-0.5">
         <li v-for="(board, i) in trendingBoards" :key="board.id">
@@ -78,7 +79,7 @@ await fetchTrending()
             />
             <div class="flex-1 min-w-0">
               <span class="text-sm text-gray-700 group-hover:text-gray-900 truncate block">{{ board.title }}</span>
-              <span class="text-[10px] text-gray-400">{{ board.subscribers }} members</span>
+              <span class="text-[10px] text-gray-400">{{ $t('sidebar.membersCount', { count: board.subscribers }) }}</span>
             </div>
           </NuxtLink>
         </li>
@@ -94,7 +95,7 @@ await fetchTrending()
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
-        Create a Board
+        {{ $t('boards.create.heading') }}
       </NuxtLink>
     </div>
   </div>

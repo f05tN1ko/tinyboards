@@ -13,6 +13,7 @@ const emit = defineEmits<{
 }>()
 
 const authStore = useAuthStore()
+const { t } = useI18n()
 </script>
 
 <template>
@@ -51,14 +52,14 @@ const authStore = useAuthStore()
             class="button button-sm white"
             @click="emit('unsubscribe')"
           >
-            Joined
+            {{ t('board.header.joined') }}
           </button>
           <button
             v-else-if="authStore.isLoggedIn"
             class="button button-sm primary"
             @click="emit('subscribe')"
           >
-            Join
+            {{ t('board.header.join') }}
           </button>
         </div>
       </div>
