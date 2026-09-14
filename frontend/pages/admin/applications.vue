@@ -2,8 +2,10 @@
 import { useGraphQL } from '~/composables/useGraphQL'
 import { useToast } from '~/composables/useToast'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin', middleware: 'guards' })
-useHead({ title: 'Registration Applications' })
+useHead({ title: () => t('admin.applications.title') })
 
 const toast = useToast()
 
@@ -63,10 +65,10 @@ async function approveApp (appId: string): Promise<void> {
   const { execute } = useGraphQL()
   const result = await execute(APPROVE_MUTATION, { variables: { applicationId: appId } })
   if (result) {
-    toast.success('Application approved')
+    toast.success(t('admin.applications.approvedToast'))
     await loadApplications()
   } else {
-    toast.error('Failed to approve application')
+    toast.error(t('admin.applications.approveFailed'))
   }
 }
 
@@ -76,17 +78,17 @@ async function denyApp (appId: string): Promise<void> {
     variables: { applicationId: appId, reason: denyReason.value || null },
   })
   if (result) {
-    toast.success('Application denied')
+    toast.success(t('admin.applications.deniedToast'))
     denyingId.value = null
     denyReason.value = ''
     await loadApplications()
   } else {
-    toast.error('Failed to deny application')
+    toast.error(t('admin.applications.denyFailed'))
   }
 }
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US', {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -98,19 +100,19 @@ function formatDate (dateStr: string): string {
 
 <template>
   <div>
-    <h2 class="text-base font-semibold text-gray-900 mb-4">Registration Applications</h2>
+    <h2 class="text-base font-semibold text-gray-900 mb-4">{{ $t('admin.applications.heading') }}</h2>
 
     <CommonLoadingSpinner v-if="loading" />
 
     <div v-else-if="applications.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-500">No registration applications.</p>
+      <p class="text-sm text-gray-500">{{ $t('admin.applications.none') }}</p>
     </div>
 
     <template v-else>
       <!-- Pending applications -->
       <div v-if="pendingApps.length > 0" class="mb-8">
         <h3 class="text-sm font-medium text-gray-700 mb-3">
-          Pending ({{ pendingApps.length }})
+          {{ $t('admin.applications.pending', { count: pendingApps.length }) }}
         </h3>
         <div class="space-y-3">
           <div
@@ -121,39 +123,39 @@ function formatDate (dateStr: string): string {
             <div class="flex items-start justify-between">
               <div class="flex-1 min-w-0">
                 <p class="text-xs text-gray-500 mb-2">
-                  Applied {{ formatDate(app.createdAt) }}
+                  {{ $t('admin.applications.applied', { date: formatDate(app.createdAt) }) }}
                 </p>
                 <div class="bg-gray-50 rounded p-3 mb-3">
-                  <p class="text-sm font-medium text-gray-700 mb-1">Application Answer:</p>
+                  <p class="text-sm font-medium text-gray-700 mb-1">{{ $t('admin.applications.applicationAnswer') }}</p>
                   <p class="text-sm text-gray-600 whitespace-pre-wrap">{{ app.answer }}</p>
                 </div>
 
                 <!-- Deny reason input -->
                 <div v-if="denyingId === app.id" class="mb-3">
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Denial Reason (optional)</label>
-                  <input v-model="denyReason" type="text" class="form-input" placeholder="Reason for denial..." />
+                  <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.applications.denialReason') }}</label>
+                  <input v-model="denyReason" type="text" class="form-input" :placeholder="$t('admin.applications.denialPlaceholder')" />
                 </div>
 
                 <div class="flex gap-2">
                   <button class="button button-sm primary" @click="approveApp(app.id)">
-                    Approve
+                    {{ $t('admin.applications.approve') }}
                   </button>
                   <button
                     v-if="denyingId !== app.id"
                     class="button button-sm bg-red-600 text-white hover:bg-red-700"
                     @click="denyingId = app.id"
                   >
-                    Deny
+                    {{ $t('admin.applications.deny') }}
                   </button>
                   <template v-else>
                     <button
                       class="button button-sm bg-red-600 text-white hover:bg-red-700"
                       @click="denyApp(app.id)"
                     >
-                      Confirm Deny
+                      {{ $t('admin.applications.confirmDeny') }}
                     </button>
                     <button class="button button-sm white" @click="denyingId = null; denyReason = ''">
-                      Cancel
+                      {{ $t('admin.applications.cancel') }}
                     </button>
                   </template>
                 </div>
@@ -166,7 +168,7 @@ function formatDate (dateStr: string): string {
       <!-- Resolved applications -->
       <div v-if="resolvedApps.length > 0">
         <h3 class="text-sm font-medium text-gray-700 mb-3">
-          Resolved ({{ resolvedApps.length }})
+          {{ $t('admin.applications.resolved', { count: resolvedApps.length }) }}
         </h3>
         <div class="space-y-3">
           <div
@@ -179,13 +181,13 @@ function formatDate (dateStr: string): string {
                 class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                 :class="app.denyReason ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'"
               >
-                {{ app.denyReason ? 'Denied' : 'Approved' }}
+                {{ app.denyReason ? $t('admin.applications.denied') : $t('admin.applications.approved') }}
               </span>
               <span class="text-xs text-gray-500">{{ formatDate(app.createdAt) }}</span>
             </div>
             <p class="text-sm text-gray-600">{{ app.answer }}</p>
             <p v-if="app.denyReason" class="text-sm text-red-600 mt-1">
-              Denial reason: {{ app.denyReason }}
+              {{ $t('admin.applications.denialReasonLabel', { reason: app.denyReason }) }}
             </p>
           </div>
         </div>

@@ -2,18 +2,19 @@
 import { useUIStore, type ThemeMode } from '~/stores/ui'
 
 definePageMeta({ layout: 'settings', middleware: 'guards' })
-useHead({ title: 'Appearance Settings' })
+const { t } = useI18n()
+useHead({ title: () => t('settings.appearance.page.title') })
 
 const uiStore = useUIStore()
 
-const themes = [
-  { value: 'light', label: 'Light', description: 'Clean and bright' },
-  { value: 'dark', label: 'Dark', description: 'Easy on the eyes' },
-  { value: 'ocean', label: 'Ocean', description: 'Deep blue tones' },
-  { value: 'forest', label: 'Forest', description: 'Natural greens' },
-  { value: 'sunset', label: 'Sunset', description: 'Warm orange hues' },
-  { value: 'purple', label: 'Purple', description: 'Rich violet tones' },
-]
+const themes = computed(() => [
+  { value: 'light', label: t('settings.appearance.page.themes.light'), description: t('settings.appearance.page.themes.lightDesc') },
+  { value: 'dark', label: t('settings.appearance.page.themes.dark'), description: t('settings.appearance.page.themes.darkDesc') },
+  { value: 'ocean', label: t('settings.appearance.page.themes.ocean'), description: t('settings.appearance.page.themes.oceanDesc') },
+  { value: 'forest', label: t('settings.appearance.page.themes.forest'), description: t('settings.appearance.page.themes.forestDesc') },
+  { value: 'sunset', label: t('settings.appearance.page.themes.sunset'), description: t('settings.appearance.page.themes.sunsetDesc') },
+  { value: 'purple', label: t('settings.appearance.page.themes.purple'), description: t('settings.appearance.page.themes.purpleDesc') },
+])
 
 function selectTheme (theme: string): void {
   uiStore.setTheme(theme as ThemeMode)
@@ -23,11 +24,11 @@ function selectTheme (theme: string): void {
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-4">
-      Appearance
+      {{ $t('settings.appearance.page.heading') }}
     </h2>
 
     <div class="max-w-md">
-      <p class="text-sm text-gray-600 mb-4">Choose a theme for your experience.</p>
+      <p class="text-sm text-gray-600 mb-4">{{ $t('settings.appearance.page.chooseTheme') }}</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <button

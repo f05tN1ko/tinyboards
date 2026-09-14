@@ -1,109 +1,115 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
 
-definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Board Settings' })
+const { t } = useI18n()
 
-interface BoardSettings {
-  boardCreationMode: string
+definePageMeta({ layout: 'admin' })
+useHead({ title: () => t('admin.boardSettings.title') })
+
+interface BoardSettingsConfig {
   boardsEnabled: boolean
-  boardCreationAdminOnly: boolean
+  boardCreationMode: string
   trustedUserMinReputation: number
   trustedUserMinAccountAgeDays: number
-  trustedUserManualApproval: boolean
   trustedUserMinPosts: number
+  trustedUserManualApproval: boolean
+  defaultBoardMode: string
 }
 
-interface BoardSettingsResponse {
-  site: BoardSettings
+interface SiteResponse {
+  site: BoardSettingsConfig
 }
 
-interface SaveBoardSettingsResponse {
-  updateSiteConfig: BoardSettings
+interface UpdateSiteResponse {
+  updateSiteConfig: BoardSettingsConfig
 }
 
-const { execute, loading, error, data } = useGraphQL<BoardSettingsResponse>()
-const { execute: executeSave, loading: saving, error: saveError } = useGraphQLMutation<SaveBoardSettingsResponse>()
+const { execute, loading, error } = useGraphQL<SiteResponse>()
+const { execute: executeMutation, loading: saving, error: saveError } = useGraphQLMutation<UpdateSiteResponse>()
 
-const boardCreationMode = ref('AdminOnly')
-const boardsEnabled = ref(true)
+const boardsEnabled = ref(false)
+const boardCreationMode = ref('Open')
 const trustedUserMinReputation = ref(0)
 const trustedUserMinAccountAgeDays = ref(0)
-const trustedUserManualApproval = ref(false)
 const trustedUserMinPosts = ref(0)
+const trustedUserManualApproval = ref(false)
+const defaultBoardMode = ref('feed')
+
 const saved = ref(false)
 
-const SETTINGS_QUERY = `
+const SITE_QUERY = `
   query {
     site {
-      boardCreationMode
       boardsEnabled
-      boardCreationAdminOnly
+      boardCreationMode
       trustedUserMinReputation
       trustedUserMinAccountAgeDays
-      trustedUserManualApproval
       trustedUserMinPosts
+      trustedUserManualApproval
+      defaultBoardMode
     }
   }
 `
 
-const SAVE_SETTINGS = `
+const UPDATE_MUTATION = `
   mutation UpdateSiteConfig($input: UpdateSiteConfigInput!) {
     updateSiteConfig(input: $input) {
-      boardCreationMode
       boardsEnabled
-      boardCreationAdminOnly
+      boardCreationMode
       trustedUserMinReputation
       trustedUserMinAccountAgeDays
-      trustedUserManualApproval
       trustedUserMinPosts
+      trustedUserManualApproval
+      defaultBoardMode
     }
   }
 `
 
-async function loadSettings () {
-  const result = await execute(SETTINGS_QUERY)
+const creationModeOptions = computed(() => [
+  { value: 'Open', label: t('admin.boardSettings.modeOpen') },
+  { value: 'TrustedUsers', label: t('admin.boardSettings.modeTrustedUsers') },
+  { value: 'AdminOnly', label: t('admin.boardSettings.modeAdminOnly') },
+  { value: 'Disabled', label: t('admin.boardSettings.modeDisabled') },
+])
+
+onMounted(async () => {
+  const result = await execute(SITE_QUERY)
   if (result?.site) {
-    boardCreationMode.value = result.site.boardCreationMode
     boardsEnabled.value = result.site.boardsEnabled
+    boardCreationMode.value = result.site.boardCreationMode
     trustedUserMinReputation.value = result.site.trustedUserMinReputation
     trustedUserMinAccountAgeDays.value = result.site.trustedUserMinAccountAgeDays
-    trustedUserManualApproval.value = result.site.trustedUserManualApproval
     trustedUserMinPosts.value = result.site.trustedUserMinPosts
+    trustedUserManualApproval.value = result.site.trustedUserManualApproval
+    defaultBoardMode.value = result.site.defaultBoardMode
   }
-}
+})
 
 async function saveSettings () {
-  saved.value = false
-  await executeSave(SAVE_SETTINGS, {
+  const result = await executeMutation(UPDATE_MUTATION, {
     variables: {
       input: {
-        boardCreationMode: boardCreationMode.value,
         boardsEnabled: boardsEnabled.value,
-        ...(boardCreationMode.value === 'TrustedUsers' ? {
-          trustedUserMinReputation: trustedUserMinReputation.value,
-          trustedUserMinAccountAgeDays: trustedUserMinAccountAgeDays.value,
-          trustedUserManualApproval: trustedUserManualApproval.value,
-          trustedUserMinPosts: trustedUserMinPosts.value,
-        } : {}),
+        boardCreationMode: boardCreationMode.value,
+        trustedUserMinReputation: trustedUserMinReputation.value,
+        trustedUserMinAccountAgeDays: trustedUserMinAccountAgeDays.value,
+        trustedUserMinPosts: trustedUserMinPosts.value,
+        trustedUserManualApproval: trustedUserManualApproval.value,
+        defaultBoardMode: defaultBoardMode.value,
       },
     },
   })
-  if (!saveError.value) {
+  if (result?.updateSiteConfig) {
     saved.value = true
     setTimeout(() => { saved.value = false }, 3000)
   }
 }
-
-onMounted(() => {
-  loadSettings()
-})
 </script>
 
 <template>
   <div>
     <h2 class="text-lg font-semibold text-gray-900 mb-6">
-      Board Settings
+      {{ $t('admin.boardSettings.heading') }}
     </h2>
 
     <CommonLoadingSpinner v-if="loading" />
@@ -114,26 +120,25 @@ onMounted(() => {
       <div>
         <label class="flex items-center gap-2">
           <input v-model="boardsEnabled" type="checkbox" class="form-checkbox" />
-          <span class="text-sm font-medium text-gray-700">Boards Enabled</span>
+          <span class="text-sm font-medium text-gray-700">{{ $t('admin.boardSettings.boardsEnabled') }}</span>
         </label>
         <p class="mt-1 text-xs text-gray-500">
-          When disabled, the site operates as a single community without sub-boards.
+          {{ $t('admin.boardSettings.boardsEnabledHint') }}
         </p>
       </div>
 
       <!-- Board creation mode -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">
-          Board Creation Mode
+          {{ $t('admin.boardSettings.creationMode') }}
         </label>
         <select v-model="boardCreationMode" class="form-input w-full">
-          <option value="Open">Open (anyone can create)</option>
-          <option value="TrustedUsers">Trusted Users (configurable requirements)</option>
-          <option value="AdminOnly">Admin Only</option>
-          <option value="Disabled">Disabled (no one can create)</option>
+          <option v-for="opt in creationModeOptions" :key="opt.value" :value="opt.value">
+            {{ opt.label }}
+          </option>
         </select>
         <p class="mt-1 text-xs text-gray-500">
-          Controls who can create new boards on the site.
+          {{ $t('admin.boardSettings.creationModeHint') }}
         </p>
       </div>
 
@@ -141,15 +146,15 @@ onMounted(() => {
       <template v-if="boardCreationMode === 'TrustedUsers'">
         <div class="rounded-lg border border-gray-200 bg-gray-50 p-4 space-y-4">
           <h3 class="text-sm font-semibold text-gray-800">
-            Trusted User Requirements
+            {{ $t('admin.boardSettings.trustedRequirements') }}
           </h3>
           <p class="text-xs text-gray-500">
-            Users must meet all of these requirements to create boards. Admins always bypass these checks.
+            {{ $t('admin.boardSettings.trustedRequirementsHint') }}
           </p>
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Minimum Reputation (post + comment score)
+              {{ $t('admin.boardSettings.minReputation') }}
             </label>
             <input
               v-model.number="trustedUserMinReputation"
@@ -161,7 +166,7 @@ onMounted(() => {
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Minimum Account Age (days)
+              {{ $t('admin.boardSettings.minAccountAge') }}
             </label>
             <input
               v-model.number="trustedUserMinAccountAgeDays"
@@ -173,7 +178,7 @@ onMounted(() => {
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">
-              Minimum Posts
+              {{ $t('admin.boardSettings.minPosts') }}
             </label>
             <input
               v-model.number="trustedUserMinPosts"
@@ -186,11 +191,10 @@ onMounted(() => {
           <div>
             <label class="flex items-center gap-2">
               <input v-model="trustedUserManualApproval" type="checkbox" class="form-checkbox" />
-              <span class="text-sm font-medium text-gray-700">Require Manual Approval</span>
+              <span class="text-sm font-medium text-gray-700">{{ $t('admin.boardSettings.requireManualApproval') }}</span>
             </label>
             <p class="mt-1 text-xs text-gray-500">
-              When enabled, users must also be manually approved by an admin before they can create boards,
-              even if they meet the automatic requirements above.
+              {{ $t('admin.boardSettings.manualApprovalHint') }}
             </p>
           </div>
         </div>
@@ -198,9 +202,9 @@ onMounted(() => {
 
       <!-- Default board mode -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Default Board Mode</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('admin.boardSettings.defaultBoardMode') }}</label>
         <p class="text-xs text-gray-500 mb-3">
-          Pre-selected mode when users create a new board. This is a default, not a restriction.
+          {{ $t('admin.boardSettings.defaultBoardModeHint') }}
         </p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <button
@@ -213,10 +217,10 @@ onMounted(() => {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">📰</span>
-              <span class="font-semibold text-sm text-gray-900">Feed Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('admin.boardSettings.feedBoard') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Share links, images, and text posts. Members vote on content.
+              {{ $t('admin.boardSettings.feedBoardDesc') }}
             </p>
           </button>
           <button
@@ -229,10 +233,10 @@ onMounted(() => {
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span class="text-lg">💬</span>
-              <span class="font-semibold text-sm text-gray-900">Forum Board</span>
+              <span class="font-semibold text-sm text-gray-900">{{ $t('admin.boardSettings.forumBoard') }}</span>
             </div>
             <p class="text-xs text-gray-500 leading-relaxed">
-              Threaded discussions. Great for Q&amp;A, support, or structured topics.
+              {{ $t('admin.boardSettings.forumBoardDesc') }}
             </p>
           </button>
         </div>
@@ -242,10 +246,10 @@ onMounted(() => {
 
       <div class="flex items-center gap-3">
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save Settings' }}
+          {{ saving ? $t('admin.boardSettings.saving') : $t('admin.boardSettings.saveSettings') }}
         </button>
         <span v-if="saved" class="text-sm text-green-600">
-          Settings saved successfully.
+          {{ $t('admin.boardSettings.saveSuccess') }}
         </span>
       </div>
     </form>

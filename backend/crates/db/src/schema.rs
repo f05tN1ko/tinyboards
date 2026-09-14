@@ -168,7 +168,6 @@ diesel::table! {
         theme -> Text,
         default_sort_type -> SortType,
         default_listing_type -> ListingType,
-        interface_language -> Text,
         is_email_notifications_enabled -> Bool,
         editor_mode -> EditorMode,
         last_seen_at -> Timestamptz,

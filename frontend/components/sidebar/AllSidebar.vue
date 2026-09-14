@@ -3,6 +3,7 @@ import { useAuthStore } from '~/stores/auth'
 import { useGraphQL } from '~/composables/useGraphQL'
 import type { Board } from '~/types/generated'
 
+const { t } = useI18n()
 const authStore = useAuthStore()
 
 const TRENDING_BOARDS_QUERY = `
@@ -71,42 +72,42 @@ function formatCount (n: number): string {
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
       </svg>
-      New Post
+      {{ $t('all.newPost') }}
     </NuxtLink>
 
     <!-- Site Stats -->
     <div v-if="siteStats" class="bg-white rounded-lg border border-gray-200 p-3">
       <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-        Site Stats
+        {{ $t('sidebar.siteStats') }}
       </h4>
       <div class="grid grid-cols-2 gap-2">
         <div class="text-center py-1">
           <div class="text-lg font-semibold text-gray-900">{{ formatCount(siteStats.users) }}</div>
-          <div class="text-xs text-gray-500">Members</div>
+          <div class="text-xs text-gray-500">{{ $t('sidebar.members') }}</div>
         </div>
         <div class="text-center py-1">
           <div class="text-lg font-semibold text-gray-900">{{ formatCount(siteStats.posts) }}</div>
-          <div class="text-xs text-gray-500">Posts</div>
+          <div class="text-xs text-gray-500">{{ $t('sidebar.posts') }}</div>
         </div>
         <div class="text-center py-1">
           <div class="text-lg font-semibold text-gray-900">{{ formatCount(siteStats.comments) }}</div>
-          <div class="text-xs text-gray-500">Comments</div>
+          <div class="text-xs text-gray-500">{{ $t('sidebar.comments') }}</div>
         </div>
         <div class="text-center py-1">
           <div class="text-lg font-semibold text-gray-900">{{ formatCount(siteStats.boards) }}</div>
-          <div class="text-xs text-gray-500">Boards</div>
+          <div class="text-xs text-gray-500">{{ $t('sidebar.boards') }}</div>
         </div>
       </div>
       <div v-if="siteStats.usersActiveDay > 0" class="mt-2 pt-2 border-t border-gray-100 flex items-center justify-center gap-1.5 text-xs text-gray-500">
         <span class="inline-block w-1.5 h-1.5 rounded-full bg-green-400" />
-        {{ siteStats.usersActiveDay }} online now
+        {{ $t('sidebar.onlineNow', { count: siteStats.usersActiveDay }) }}
       </div>
     </div>
 
     <!-- Active boards -->
     <div v-if="trendingBoards.length > 0">
       <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 px-1">
-        Most Active
+        {{ $t('sidebar.mostActive') }}
       </h4>
       <ul class="space-y-0.5">
         <li v-for="board in trendingBoards" :key="board.id">
@@ -134,7 +135,7 @@ function formatCount (n: number): string {
     <!-- Footer links -->
     <div class="border-t border-gray-200 pt-3">
       <p class="text-[10px] text-gray-400 leading-relaxed">
-        Powered by TinyBoards &mdash; a self-hosted community platform.
+        {{ $t('sidebar.poweredBy') }}
       </p>
     </div>
   </div>

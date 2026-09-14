@@ -7,8 +7,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Moderators - b/${boardName}` })
+useHead({ title: t('board.settings.moderation.heading') + ' - b/' + boardName })
 
 interface Moderator {
   id: string
@@ -147,7 +148,7 @@ async function addModerator () {
   `, { variables: { username: newModUsername.value.trim() } })
 
   if (!userResult?.user) {
-    toast.error('User not found')
+    toast.error(t('board.settings.moderation.userNotFound'))
     actionLoading.value = false
     return
   }
@@ -156,7 +157,7 @@ async function addModerator () {
     variables: { boardId: boardId.value, userId: userResult.user.id },
   })
 
-  toast.success(`${newModUsername.value} added as moderator`)
+  toast.success(t('board.settings.moderation.addedToast', { name: newModUsername.value }))
   newModUsername.value = ''
   await fetchModerators()
   actionLoading.value = false
@@ -164,13 +165,13 @@ async function addModerator () {
 
 async function removeModerator (userId: string, username: string) {
   if (!boardId.value) return
-  if (!confirm(`Remove ${username} as moderator?`)) return
+  if (!confirm(t('board.settings.moderation.removeConfirm', { name: username }))) return
 
   actionLoading.value = true
   await executeMutation(REMOVE_MOD_MUTATION, {
     variables: { boardId: boardId.value, userId },
   })
-  toast.success(`${username} removed as moderator`)
+  toast.success(t('board.settings.moderation.removedToast', { name: username }))
   await fetchModerators()
   actionLoading.value = false
 }
@@ -188,30 +189,30 @@ function formatDate (dateStr: string): string {
         :to="`/b/${boardName}/settings`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        General
+        {{ $t('board.settings.tabsGeneral') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/appearance`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        Appearance
+        {{ $t('board.settings.tabsAppearance') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/moderation`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-blue-600 text-blue-600"
       >
-        Moderation
+        {{ $t('board.settings.tabsModeration') }}
       </NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/emojis`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
       >
-        Emojis
+        {{ $t('board.settings.tabsEmojis') }}
       </NuxtLink>
     </div>
 
     <h2 class="text-base font-semibold text-gray-900 mb-4">
-      Moderators
+      {{ $t('board.settings.moderation.heading') }}
     </h2>
 
     <CommonLoadingSpinner v-if="loading && moderators.length === 0" size="lg" />
@@ -219,14 +220,14 @@ function formatDate (dateStr: string): string {
 
     <div v-else class="max-w-2xl">
       <div v-if="isOwner" class="mb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Add Moderator</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.moderation.addModerator') }}</label>
         <div class="relative">
           <div class="flex gap-2">
             <input
               v-model="newModUsername"
               type="text"
               class="form-input flex-1"
-              placeholder="Search by username..."
+              :placeholder="$t('board.settings.moderation.searchUsername')"
               @input="onSearchInput"
               @keydown.enter.prevent="addModerator"
             >
@@ -235,7 +236,7 @@ function formatDate (dateStr: string): string {
               :disabled="actionLoading || !newModUsername.trim()"
               @click="addModerator"
             >
-              Add
+              {{ $t('board.settings.moderation.add') }}
             </button>
           </div>
           <div
@@ -272,8 +273,8 @@ function formatDate (dateStr: string): string {
               </div>
               <div class="text-xs text-gray-500">
                 @{{ mod.user.name }}
-                <span v-if="mod.rank === 0" class="ml-1 text-blue-600 font-medium">Owner</span>
-                <span class="ml-1">&middot; Added {{ formatDate(mod.createdAt) }}</span>
+                <span v-if="mod.rank === 0" class="ml-1 text-blue-600 font-medium">{{ $t('board.settings.moderation.owner') }}</span>
+                <span class="ml-1">&middot; {{ $t('board.settings.moderation.addedDate', { date: formatDate(mod.createdAt) }) }}</span>
               </div>
             </div>
           </div>
@@ -284,13 +285,13 @@ function formatDate (dateStr: string): string {
             :disabled="actionLoading"
             @click="removeModerator(mod.user.id, mod.user.name)"
           >
-            Remove
+            {{ $t('board.settings.moderation.remove') }}
           </button>
         </div>
       </div>
 
       <p v-if="moderators.length === 0 && !loading" class="text-sm text-gray-500 py-4">
-        No moderators found.
+        {{ $t('board.settings.moderation.noModerators') }}
       </p>
     </div>
   </div>

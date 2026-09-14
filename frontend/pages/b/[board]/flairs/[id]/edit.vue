@@ -9,8 +9,9 @@ const route = useRoute()
 const boardName = route.params.board as string
 const flairId = route.params.id as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Edit Flair - b/${boardName}` })
+useHead({ title: t('board.flairs.editTitle', { board: boardName }) })
 
 const { updateFlair } = useFlairs()
 const boardId = ref<string | null>(null)
@@ -118,10 +119,10 @@ async function handleSubmit () {
   saving.value = false
 
   if (result) {
-    toast.success('Flair updated')
+    toast.success(t('board.flairs.updated'))
     await navigateTo(`/b/${boardName}/flairs`)
   } else {
-    toast.error('Failed to update flair')
+    toast.error(t('board.flairs.updateFailed'))
   }
 }
 </script>
@@ -131,50 +132,50 @@ async function handleSubmit () {
     <nav class="text-sm text-gray-500 mb-4">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <NuxtLink :to="`/b/${boardName}/flairs`" class="hover:text-gray-700">Flairs</NuxtLink>
+      <NuxtLink :to="`/b/${boardName}/flairs`" class="hover:text-gray-700">{{ $t('board.flairs.heading') }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span>Edit</span>
+      <span>{{ $t('board.flairs.edit') }}</span>
     </nav>
 
-    <h1 class="text-lg font-semibold text-gray-900 mb-6">Edit Flair</h1>
+    <h1 class="text-lg font-semibold text-gray-900 mb-6">{{ $t('board.flairs.editHeading') }}</h1>
 
     <CommonLoadingSpinner v-if="loadingFlair" />
 
     <div v-else-if="!flair" class="text-center py-12">
-      <p class="text-sm text-gray-500 mb-4">Flair not found.</p>
+      <p class="text-sm text-gray-500 mb-4">{{ $t('board.flairs.notFound') }}</p>
       <NuxtLink :to="`/b/${boardName}/flairs`" class="text-sm text-primary hover:underline">
-        Back to flairs
+        {{ $t('board.flairs.backToFlairs') }}
       </NuxtLink>
     </div>
 
     <form v-else class="space-y-5 max-w-2xl" @submit.prevent="handleSubmit">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.templateName') }}</label>
           <input v-model="form.templateName" type="text" class="form-input w-full" required />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Display Text</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.displayText') }}</label>
           <input v-model="form.textDisplay" type="text" class="form-input w-full" placeholder="Optional" />
         </div>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.type') }}</label>
         <input :value="flair.flairType" type="text" class="form-input w-full" disabled />
-        <p class="text-xs text-gray-500 mt-1">Flair type cannot be changed after creation.</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $t('board.flairs.typeCannotChange') }}</p>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Text Color</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.textColor') }}</label>
           <div class="flex items-center gap-2">
             <input v-model="form.textColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
             <input v-model="form.textColor" type="text" class="form-input w-full font-mono text-sm" />
           </div>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Background Color</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.backgroundColor') }}</label>
           <div class="flex items-center gap-2">
             <input v-model="form.backgroundColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
             <input v-model="form.backgroundColor" type="text" class="form-input w-full font-mono text-sm" />
@@ -185,38 +186,38 @@ async function handleSubmit () {
       <div class="space-y-2">
         <label class="flex items-center gap-2">
           <input v-model="form.isModOnly" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Mod-only</span>
+          <span class="text-sm text-gray-700">{{ $t('board.flairs.modOnlyLabel') }}</span>
         </label>
         <label class="flex items-center gap-2">
           <input v-model="form.isEditable" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Editable by users</span>
+          <span class="text-sm text-gray-700">{{ $t('board.flairs.editableLabel') }}</span>
         </label>
         <label class="flex items-center gap-2">
           <input v-model="form.isActive" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Active (visible to users)</span>
+          <span class="text-sm text-gray-700">{{ $t('board.flairs.activeLabel') }}</span>
         </label>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Display Order</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.displayOrder') }}</label>
         <input v-model.number="form.displayOrder" type="number" class="form-input w-24" min="0" />
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Preview</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.flairs.preview') }}</label>
         <span
           class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
           :style="{ color: form.textColor, backgroundColor: form.backgroundColor }"
         >
-          {{ form.textDisplay || form.templateName || 'Preview' }}
+          {{ form.textDisplay || form.templateName || $t('board.flairs.previewPlaceholder') }}
         </span>
       </div>
 
       <div class="flex gap-3">
         <button type="submit" class="button primary" :disabled="saving || !form.templateName.trim()">
-          {{ saving ? 'Saving...' : 'Save Changes' }}
+          {{ saving ? $t('board.flairs.saving') : $t('board.flairs.saveChanges') }}
         </button>
-        <NuxtLink :to="`/b/${boardName}/flairs`" class="button white">Cancel</NuxtLink>
+        <NuxtLink :to="`/b/${boardName}/flairs`" class="button white">{{ $t('board.flairs.cancel') }}</NuxtLink>
       </div>
     </form>
   </div>

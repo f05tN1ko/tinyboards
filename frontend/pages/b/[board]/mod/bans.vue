@@ -7,8 +7,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Bans - b/${boardName}` })
+useHead({ title: t('board.mod.bansTitle', { board: boardName }) })
 
 interface BannedUser {
   id: string
@@ -158,7 +159,7 @@ async function handleBan () {
   const { execute: execUser } = useGraphQL<{ user: { id: string } }>()
   const userResult = await execUser(USER_QUERY, { variables: { username: banForm.username } })
   if (!userResult?.user) {
-    toast.error('User not found')
+    toast.error(t('board.mod.userNotFound'))
     banning.value = false
     return
   }
@@ -177,7 +178,7 @@ async function handleBan () {
   banning.value = false
 
   if (result?.banUserFromBoard?.success) {
-    toast.success(`${banForm.username} banned from b/${boardName}`)
+    toast.success(t('board.mod.bannedToast', { name: banForm.username, board: boardName }))
     banForm.username = ''
     banForm.reason = ''
     banForm.duration = 'permanent'
@@ -185,7 +186,7 @@ async function handleBan () {
     showBanForm.value = false
     await loadBannedUsers()
   } else {
-    toast.error('Failed to ban user')
+    toast.error(t('board.mod.banFailed'))
   }
 }
 
@@ -198,7 +199,7 @@ async function handleUnban (ban: BannedUser) {
   })
 
   bannedUsers.value = bannedUsers.value.filter(b => b.id !== ban.id)
-  toast.success(`${ban.user.name} unbanned from b/${boardName}`)
+  toast.success(t('board.mod.unbannedToast', { name: ban.user.name, board: boardName }))
 }
 
 function formatDate (dateStr: string): string {
@@ -210,9 +211,9 @@ function formatDate (dateStr: string): string {
 }
 
 function formatExpiry (expires: string | null): string {
-  if (!expires) return 'Permanent'
+  if (!expires) return t('board.mod.permanent')
   const date = new Date(expires)
-  if (date < new Date()) return 'Expired'
+  if (date < new Date()) return t('board.mod.expired')
   return formatDate(expires)
 }
 </script>
@@ -223,19 +224,19 @@ function formatExpiry (expires: string | null): string {
     <nav class="text-sm text-gray-500 mb-2">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-primary no-underline">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span class="text-gray-700">Moderation</span>
+      <span class="text-gray-700">{{ $t('board.mod.moderation') }}</span>
     </nav>
 
     <!-- Header card -->
     <div class="bg-white rounded-lg border border-gray-200 mb-4 overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
-        <h1 class="text-lg font-semibold text-gray-900">Board Bans</h1>
+        <h1 class="text-lg font-semibold text-gray-900">{{ $t('board.mod.bansHeading') }}</h1>
         <button
           v-if="!showBanForm"
           class="button primary button-sm"
           @click="showBanForm = true"
         >
-          Ban user
+          {{ $t('board.mod.banUser') }}
         </button>
       </div>
       <div class="px-4 flex gap-0.5">
@@ -243,34 +244,34 @@ function formatExpiry (expires: string | null): string {
           :to="`/b/${boardName}/mod/queue`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Reports
+          {{ $t('board.mod.reports') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/log`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Mod Log
+          {{ $t('board.mod.modLog') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/bans`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-primary text-primary"
         >
-          Bans
+          {{ $t('board.mod.bans') }}
         </NuxtLink>
       </div>
     </div>
 
     <!-- Ban form -->
     <div v-if="showBanForm" class="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-      <h3 class="text-sm font-medium text-gray-900 mb-4">Ban User</h3>
+      <h3 class="text-sm font-medium text-gray-900 mb-4">{{ $t('board.mod.banUserHeading') }}</h3>
       <form class="space-y-4" @submit.prevent="handleBan">
         <div class="relative">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.mod.username') }}</label>
           <input
             v-model="searchQuery"
             type="text"
             class="form-input w-full"
-            placeholder="Search for a user..."
+            :placeholder="$t('board.mod.searchUser')"
             @input="onSearchInput"
           />
           <div
@@ -290,25 +291,25 @@ function formatExpiry (expires: string | null): string {
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-          <textarea v-model="banForm.reason" rows="2" class="form-input w-full" placeholder="Ban reason (optional)" />
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.mod.banReason') }}</label>
+          <textarea v-model="banForm.reason" rows="2" class="form-input w-full" :placeholder="$t('board.mod.banReasonPlaceholder')" />
         </div>
 
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.mod.duration') }}</label>
           <select v-model="banForm.duration" class="form-input w-full">
-            <option value="1day">1 Day</option>
-            <option value="1week">1 Week</option>
-            <option value="1month">1 Month</option>
-            <option value="permanent">Permanent</option>
+            <option value="1day">{{ $t('board.mod.duration1Day') }}</option>
+            <option value="1week">{{ $t('board.mod.duration1Week') }}</option>
+            <option value="1month">{{ $t('board.mod.duration1Month') }}</option>
+            <option value="permanent">{{ $t('board.mod.durationPermanent') }}</option>
           </select>
         </div>
 
         <div class="flex gap-3">
           <button type="submit" class="button primary button-sm" :disabled="banning || !banForm.username">
-            {{ banning ? 'Banning...' : 'Ban User' }}
+            {{ banning ? $t('board.mod.banning') : $t('board.mod.banUserButton') }}
           </button>
-          <button type="button" class="button white button-sm" @click="showBanForm = false">Cancel</button>
+          <button type="button" class="button white button-sm" @click="showBanForm = false">{{ $t('board.settings.general.cancel') }}</button>
         </div>
       </form>
     </div>
@@ -316,7 +317,7 @@ function formatExpiry (expires: string | null): string {
     <CommonLoadingSpinner v-if="loadingBans" />
 
     <div v-else-if="bannedUsers.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-500">No banned users.</p>
+      <p class="text-sm text-gray-500">{{ $t('board.mod.noBans') }}</p>
     </div>
 
     <div v-else class="space-y-2">
@@ -335,13 +336,13 @@ function formatExpiry (expires: string | null): string {
               <span class="text-gray-500 font-normal">@{{ ban.user.name }}</span>
             </p>
             <p class="text-xs text-gray-500">
-              Banned {{ formatDate(ban.banDate) }}
-              &middot; Expires: {{ formatExpiry(ban.expires) }}
+              {{ $t('board.mod.bannedDate', { date: formatDate(ban.banDate) }) }}
+              &middot; {{ $t('board.mod.expiresLabel', { date: formatExpiry(ban.expires) }) }}
             </p>
           </div>
         </div>
         <button class="button white button-sm" @click="handleUnban(ban)">
-          Unban
+          {{ $t('board.mod.unban') }}
         </button>
       </div>
     </div>

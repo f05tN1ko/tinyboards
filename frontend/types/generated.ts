@@ -1794,7 +1794,6 @@ export type UpdateSettingsInput = {
   defaultSortType?: InputMaybe<Scalars['String']['input']>;
   editorMode?: InputMaybe<Scalars['String']['input']>;
   email?: InputMaybe<Scalars['String']['input']>;
-  interfaceLanguage?: InputMaybe<Scalars['String']['input']>;
   isEmailNotificationsEnabled?: InputMaybe<Scalars['Boolean']['input']>;
   showBots?: InputMaybe<Scalars['Boolean']['input']>;
   showNsfw?: InputMaybe<Scalars['Boolean']['input']>;
@@ -1892,7 +1891,6 @@ export type UserSettings = {
   editorMode: Scalars['String']['output'];
   email?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
-  interfaceLanguage: Scalars['String']['output'];
   isEmailNotificationsEnabled: Scalars['Boolean']['output'];
   isEmailVerified: Scalars['Boolean']['output'];
   name: Scalars['String']['output'];

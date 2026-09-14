@@ -14,6 +14,8 @@ const emit = defineEmits<{
   submit: [data: { title: string; body: string; url: string; file: File | null; altText: string }]
 }>()
 
+const { t } = useI18n()
+
 const title = ref(props.initialTitle ?? '')
 const body = ref(props.initialBody ?? '')
 const url = ref(props.initialUrl ?? '')
@@ -64,19 +66,31 @@ function handleSubmit (): void {
     altText: activeTab.value === 'media' ? altText.value : '',
   })
 }
+
+const bodyLabel = computed(() =>
+  activeTab.value === 'link' ? t('postForm.descriptionOptional')
+    : activeTab.value === 'media' ? t('postForm.captionOptional')
+    : t('postForm.body'),
+)
+
+const bodyPlaceholder = computed(() =>
+  activeTab.value === 'link' ? t('postForm.addDescription')
+    : activeTab.value === 'media' ? t('postForm.addCaption')
+    : t('postForm.writeYourPost'),
+)
 </script>
 
 <template>
   <form class="space-y-4" @submit.prevent="handleSubmit">
     <div>
-      <label for="post-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+      <label for="post-title" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('postForm.title') }}</label>
       <input
         id="post-title"
         v-model="title"
         type="text"
         class="form-input"
         required
-        placeholder="Post title"
+        :placeholder="$t('postForm.titlePlaceholder')"
       >
     </div>
 
@@ -88,7 +102,7 @@ function handleSubmit (): void {
         :class="activeTab === 'text' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
         @click="activeTab = 'text'"
       >
-        Text
+        {{ $t('postForm.text') }}
       </button>
       <button
         type="button"
@@ -96,7 +110,7 @@ function handleSubmit (): void {
         :class="activeTab === 'media' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
         @click="activeTab = 'media'"
       >
-        Image / Video
+        {{ $t('postForm.imageVideo') }}
       </button>
       <button
         type="button"
@@ -104,19 +118,19 @@ function handleSubmit (): void {
         :class="activeTab === 'link' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'"
         @click="activeTab = 'link'"
       >
-        Link
+        {{ $t('postForm.link') }}
       </button>
     </div>
 
     <!-- Link URL input -->
     <div v-if="activeTab === 'link'">
-      <label for="post-url" class="block text-sm font-medium text-gray-700 mb-1">URL</label>
+      <label for="post-url" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('postForm.url') }}</label>
       <input
         id="post-url"
         v-model="url"
         type="url"
         class="form-input"
-        placeholder="https://..."
+        :placeholder="$t('postForm.urlPlaceholder')"
       >
     </div>
 
@@ -129,7 +143,7 @@ function handleSubmit (): void {
           </svg>
         </div>
         <label class="button white cursor-pointer">
-          Choose file
+          {{ $t('postForm.chooseFile') }}
           <input
             type="file"
             class="hidden"
@@ -137,7 +151,7 @@ function handleSubmit (): void {
             @change="handleFileSelect"
           >
         </label>
-        <p class="text-xs text-gray-500 mt-2">Images (JPG, PNG, GIF, WebP) or Videos (MP4, WebM)</p>
+        <p class="text-xs text-gray-500 mt-2">{{ $t('postForm.mediaHint') }}</p>
       </div>
 
       <!-- File preview -->
@@ -145,7 +159,7 @@ function handleSubmit (): void {
         <div class="flex items-start gap-4">
           <!-- Image preview -->
           <div v-if="filePreview" class="flex-shrink-0">
-            <img :src="filePreview" alt="Preview" class="h-24 w-24 object-cover rounded-lg border" />
+            <img :src="filePreview" :alt="$t('postForm.preview')" class="h-24 w-24 object-cover rounded-lg border" />
           </div>
           <!-- Video indicator -->
           <div v-else-if="selectedFile.type.startsWith('video/')" class="flex-shrink-0 h-24 w-24 bg-gray-100 rounded-lg border flex items-center justify-center">
@@ -159,7 +173,7 @@ function handleSubmit (): void {
             <p class="text-sm font-medium text-gray-900 truncate">{{ selectedFile.name }}</p>
             <p class="text-xs text-gray-500">{{ formatFileSize(selectedFile.size) }}</p>
             <button type="button" class="text-xs text-red-600 hover:text-red-700 mt-1" @click="removeFile">
-              Remove
+              {{ $t('postForm.remove') }}
             </button>
           </div>
         </div>
@@ -167,14 +181,14 @@ function handleSubmit (): void {
         <!-- Alt text -->
         <div class="mt-3">
           <label for="alt-text" class="block text-xs font-medium text-gray-600 mb-1">
-            Alt text (improves accessibility)
+            {{ $t('postForm.altText') }}
           </label>
           <input
             id="alt-text"
             v-model="altText"
             type="text"
             class="form-input text-sm"
-            placeholder="Describe the image or video..."
+            :placeholder="$t('postForm.altTextPlaceholder')"
           >
         </div>
       </div>
@@ -183,18 +197,18 @@ function handleSubmit (): void {
     <!-- Body / description -->
     <div>
       <label class="block text-sm font-medium text-gray-700 mb-1">
-        {{ activeTab === 'link' ? 'Description (optional)' : activeTab === 'media' ? 'Caption (optional)' : 'Body' }}
+        {{ bodyLabel }}
       </label>
       <EditorRichTextEditor
         v-model="body"
         :board-id="boardId"
-        :placeholder="activeTab === 'link' ? 'Add a description...' : activeTab === 'media' ? 'Add a caption...' : 'Write your post...'"
+        :placeholder="bodyPlaceholder"
         min-height="150px"
       />
     </div>
 
     <button type="submit" class="button primary">
-      {{ submitLabel ?? 'Submit' }}
+      {{ submitLabel ?? $t('postForm.submitFallback') }}
     </button>
   </form>
 </template>

@@ -3,9 +3,11 @@ import { ref, computed, watch } from 'vue'
 import { useGraphQL } from '~/composables/useGraphQL'
 import { useToast } from '~/composables/useToast'
 
+const { t, locale } = useI18n()
+
 definePageMeta({ layout: 'admin' })
 const toast = useToast()
-useHead({ title: 'Admin - Admins' })
+useHead({ title: () => t('admin.admins.title') })
 
 interface User {
   id: string
@@ -75,7 +77,6 @@ const adminUsers = computed(() => {
   return data.value.listUsers.filter(u => u.isAdmin)
 })
 
-// Modal state for adding a new admin
 const showAddAdmin = ref(false)
 const newAdminSearch = ref('')
 const selectedUser = ref<User | null>(null)
@@ -110,7 +111,7 @@ async function addAdmin () {
     variables: { userId: selectedUser.value.id, adminLevel: selectedLevel.value },
   })
   if (result) {
-    toast.success(`${selectedUser.value.displayName || selectedUser.value.name} is now an admin`)
+    toast.success(t('admin.admins.addedToast', { name: selectedUser.value.displayName || selectedUser.value.name }))
     showAddAdmin.value = false
     selectedUser.value = null
     newAdminSearch.value = ''
@@ -120,12 +121,12 @@ async function addAdmin () {
 }
 
 async function removeAdmin (user: User) {
-  if (!confirm(`Remove admin privileges from ${user.displayName || user.name}?`)) return
+  if (!confirm(t('admin.admins.confirmRemove', { name: user.displayName || user.name }))) return
   const result = await executeMutation(REMOVE_ADMIN_MUTATION, {
     variables: { userId: user.id, adminLevel: 0 },
   })
   if (result) {
-    toast.success(`Admin privileges removed from ${user.displayName || user.name}`)
+    toast.success(t('admin.admins.removedToast', { name: user.displayName || user.name }))
     await fetchUsers()
   }
 }
@@ -135,7 +136,7 @@ async function changeLevel (user: User, newLevel: number) {
     variables: { userId: user.id, adminLevel: newLevel },
   })
   if (result) {
-    toast.success(`Admin level updated to ${newLevel}`)
+    toast.success(t('admin.admins.levelUpdatedToast', { level: newLevel }))
     await fetchUsers()
   }
 }
@@ -154,27 +155,28 @@ watch(page, fetchUsers)
 fetchUsers()
 
 function formatDate (dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString()
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 
-function levelLabel (level: number): string {
-  switch (level) {
-    case 1: return 'Moderator'
-    case 2: return 'Admin'
-    case 3: return 'Super Admin'
-    default: return `Level ${level}`
-  }
-}
+const levelOptions = computed(() => [
+  { value: 1, label: t('admin.admins.level1') },
+  { value: 2, label: t('admin.admins.level2') },
+  { value: 3, label: t('admin.admins.level3') },
+  { value: 4, label: t('admin.admins.level4') },
+  { value: 5, label: t('admin.admins.level5') },
+  { value: 6, label: t('admin.admins.level6') },
+  { value: 7, label: t('admin.admins.level7') },
+])
 </script>
 
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-semibold text-gray-900">
-        Admin Management
+        {{ $t('admin.admins.heading') }}
       </h2>
       <button class="button primary button-sm" @click="showAddAdmin = true">
-        Add Admin
+        {{ $t('admin.admins.addAdmin') }}
       </button>
     </div>
 
@@ -204,14 +206,14 @@ function levelLabel (level: number): string {
                 {{ user.displayName || user.name }}
               </NuxtLink>
               <div class="text-xs text-gray-500">
-                @{{ user.name }} &middot; Joined {{ formatDate(user.createdAt) }}
+                @{{ user.name }} &middot; {{ $t('admin.admins.joined') }} {{ formatDate(user.createdAt) }}
               </div>
             </div>
           </div>
 
           <div class="flex items-center gap-3">
             <span class="text-xs text-gray-500">
-              {{ user.postCount }} posts &middot; {{ user.commentCount }} comments
+              {{ $t('admin.admins.postsAndComments', { posts: user.postCount, comments: user.commentCount }) }}
             </span>
 
             <select
@@ -220,13 +222,9 @@ function levelLabel (level: number): string {
               :disabled="mutationLoading"
               @change="changeLevel(user, parseInt(($event.target as HTMLSelectElement).value))"
             >
-              <option :value="1">Level 1 - Appearance</option>
-              <option :value="2">Level 2 - Config</option>
-              <option :value="3">Level 3 - Content</option>
-              <option :value="4">Level 4 - Users</option>
-              <option :value="5">Level 5 - Boards</option>
-              <option :value="6">Level 6 - Full</option>
-              <option :value="7">Level 7 - Owner</option>
+              <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
             </select>
 
             <button
@@ -234,7 +232,7 @@ function levelLabel (level: number): string {
               :disabled="mutationLoading"
               @click="removeAdmin(user)"
             >
-              Remove
+              {{ $t('admin.admins.remove') }}
             </button>
           </div>
         </div>
@@ -249,21 +247,21 @@ function levelLabel (level: number): string {
     </div>
 
     <div v-else class="py-12 text-center text-sm text-gray-500">
-      No admin users found.
+      {{ $t('admin.admins.noAdmins') }}
     </div>
 
     <!-- Add Admin Modal -->
     <div v-if="showAddAdmin" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showAddAdmin = false">
       <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-        <h3 class="text-lg font-semibold mb-4">Add Administrator</h3>
+        <h3 class="text-lg font-semibold mb-4">{{ $t('admin.admins.addTitle') }}</h3>
 
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Search User</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.admins.searchUser') }}</label>
           <input
             v-model="newAdminSearch"
             type="text"
             class="form-input w-full"
-            placeholder="Search by username..."
+            :placeholder="$t('admin.admins.searchPlaceholder')"
             @input="onSearchInput"
           >
         </div>
@@ -283,30 +281,26 @@ function levelLabel (level: number): string {
         </div>
 
         <div v-if="selectedUser" class="mb-4 p-3 bg-gray-50 rounded text-sm">
-          Selected: <strong>{{ selectedUser.displayName || selectedUser.name }}</strong> (@{{ selectedUser.name }})
+          {{ $t('admin.admins.selected') }} <strong>{{ selectedUser.displayName || selectedUser.name }}</strong> (@{{ selectedUser.name }})
         </div>
 
         <div class="mb-4">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Admin Level</label>
+          <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.admins.adminLevel') }}</label>
           <select v-model="selectedLevel" class="form-select w-full">
-            <option :value="1">Level 1 - Appearance</option>
-            <option :value="2">Level 2 - Config</option>
-            <option :value="3">Level 3 - Content</option>
-            <option :value="4">Level 4 - Users</option>
-            <option :value="5">Level 5 - Boards</option>
-            <option :value="6">Level 6 - Full</option>
-            <option :value="7">Level 7 - Owner</option>
+            <option v-for="opt in levelOptions" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
           </select>
         </div>
 
         <div class="flex justify-end gap-2">
-          <button class="button gray button-sm" @click="showAddAdmin = false">Cancel</button>
+          <button class="button gray button-sm" @click="showAddAdmin = false">{{ $t('admin.admins.cancel') }}</button>
           <button
             class="button primary button-sm"
             :disabled="!selectedUser || mutationLoading"
             @click="addAdmin"
           >
-            Grant Admin
+            {{ $t('admin.admins.grantAdmin') }}
           </button>
         </div>
       </div>

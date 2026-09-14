@@ -9,8 +9,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Emojis - b/${boardName}` })
+useHead({ title: t('board.settings.tabsEmojis') + ' - b/' + boardName })
 
 // ============================================================
 // Types
@@ -175,7 +176,7 @@ async function saveReactionSettings () {
     },
   })
   if (result) {
-    toast.success('Reaction settings saved')
+    toast.success(t('board.settings.emojis.reactionsSaved'))
   }
 }
 
@@ -185,7 +186,7 @@ function removeReactionEmoji (index: number) {
 
 function addUnicodeReaction (emoji: string) {
   if (reactionEmojis.value.length >= 10) {
-    toast.error('Maximum 10 reaction emojis')
+    toast.error(t('board.settings.emojis.maxReactions'))
     return
   }
   // Check for duplicate
@@ -197,7 +198,7 @@ function addUnicodeReaction (emoji: string) {
 
 function addCustomReaction (emoji: EmojiObject) {
   if (reactionEmojis.value.length >= 10) {
-    toast.error('Maximum 10 reaction emojis')
+    toast.error(t('board.settings.emojis.maxReactions'))
     return
   }
   if (reactionEmojis.value.some(e => e.type === 'custom' && e.shortcode === emoji.shortcode)) return
@@ -291,7 +292,7 @@ async function createBoardEmoji () {
       newShortcode.value = ''
       clearFile()
       await Promise.all([loadBoardEmojis(), loadAvailableEmojis()])
-      toast.success('Board emoji created')
+      toast.success(t('board.settings.emojis.emojiCreated'))
     }
   } else {
     if (!newImageUrl.value.trim()) return
@@ -312,7 +313,7 @@ async function createBoardEmoji () {
       newShortcode.value = ''
       newImageUrl.value = ''
       await Promise.all([loadBoardEmojis(), loadAvailableEmojis()])
-      toast.success('Board emoji created')
+      toast.success(t('board.settings.emojis.emojiCreated'))
     }
   }
 }
@@ -320,7 +321,7 @@ async function createBoardEmoji () {
 async function deleteBoardEmoji (id: string) {
   await executeDelete(DELETE_EMOJI, { variables: { emojiId: id } })
   await Promise.all([loadBoardEmojis(), loadAvailableEmojis()])
-  toast.success('Emoji deleted')
+  toast.success(t('board.settings.emojis.emojiDeleted'))
 }
 
 const formValid = computed(() => {
@@ -338,27 +339,19 @@ const formBusy = computed(() => uploading.value)
       <NuxtLink
         :to="`/b/${boardName}/settings`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        General
-      </NuxtLink>
+      >{{ $t('board.settings.tabsGeneral') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/appearance`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        Appearance
-      </NuxtLink>
+      >{{ $t('board.settings.tabsAppearance') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/moderation`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        Moderation
-      </NuxtLink>
+      >{{ $t('board.settings.tabsModeration') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/emojis`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-blue-600 text-blue-600"
-      >
-        Emojis
-      </NuxtLink>
+      >{{ $t('board.settings.tabsEmojis') }}</NuxtLink>
     </div>
 
     <CommonLoadingSpinner v-if="loading && !boardId" size="lg" />
@@ -368,17 +361,15 @@ const formBusy = computed(() => uploading.value)
       <!-- Section A: Reaction Emojis Configuration -->
       <!-- ============================================================ -->
       <section>
-        <h2 class="text-base font-semibold text-gray-900 mb-1">
-          Reaction Emojis
-        </h2>
+        <h2 class="text-base font-semibold text-gray-900 mb-1">{{ $t('board.settings.emojis.reactionEmojis') }}</h2>
         <p class="text-xs text-gray-500 mb-4">
-          Choose which emojis appear as quick-reaction buttons on posts and comments. Leave empty to use the site defaults.
+          {{ $t('board.settings.emojis.reactionDesc') }}
         </p>
 
         <!-- Reactions enabled toggle -->
         <label class="flex items-center gap-2 mb-4">
           <input v-model="reactionsEnabled" type="checkbox" class="form-checkbox" />
-          <span class="text-sm text-gray-700">Enable reactions on this board</span>
+          <span class="text-sm text-gray-700">{{ $t('board.settings.emojis.enableReactions') }}</span>
         </label>
 
         <!-- Current reaction emojis -->
@@ -411,7 +402,7 @@ const formBusy = computed(() => uploading.value)
             </div>
 
             <span v-if="reactionEmojis.length === 0" class="text-xs text-gray-400 italic">
-              Using site defaults (👍 ❤️ 😂 😮 😢 🔥)
+              {{ $t('board.settings.emojis.usingDefaults') }} (👍 ❤️ 😂 😮 😢 🔥)
             </span>
 
             <!-- Add button -->
@@ -419,28 +410,26 @@ const formBusy = computed(() => uploading.value)
               v-if="reactionEmojis.length < 10"
               class="inline-flex items-center px-2 py-1 rounded-full text-xs border border-dashed border-gray-300 text-gray-400 hover:text-gray-600 hover:border-gray-400 transition-colors"
               @click="showEmojiSelector = !showEmojiSelector"
-            >
-              + Add
-            </button>
+            >{{ $t('board.settings.emojis.addReaction') }}</button>
           </div>
         </div>
 
         <!-- Emoji selector popup -->
         <div v-if="showEmojiSelector" class="bg-white border border-gray-200 rounded-lg shadow-lg p-4 mb-4">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-sm font-medium text-gray-700">Select an Emoji</span>
+            <span class="text-sm font-medium text-gray-700">{{ $t('board.settings.emojis.selectEmoji') }}</span>
             <button class="text-xs text-gray-400 hover:text-gray-600" @click="showEmojiSelector = false">Close</button>
           </div>
           <input
             v-model="emojiSearch"
             type="text"
             class="form-input w-full mb-3 text-sm"
-            placeholder="Search emojis..."
+            :placeholder="$t('board.settings.emojis.searchEmojis')"
           />
 
           <!-- Custom emojis section -->
           <div v-if="filteredCustomEmojis.length > 0" class="mb-3">
-            <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Custom Emojis</h4>
+            <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ $t('board.settings.emojis.customEmojis') }}</h4>
             <div class="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
               <button
                 v-for="emoji in filteredCustomEmojis"
@@ -456,7 +445,7 @@ const formBusy = computed(() => uploading.value)
 
           <!-- Unicode emojis section -->
           <div>
-            <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Unicode Emojis</h4>
+            <h4 class="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">{{ $t('board.settings.emojis.unicodeEmojis') }}</h4>
             <div class="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
               <button
                 v-for="ue in filteredUnicodeEmojis"
@@ -478,7 +467,7 @@ const formBusy = computed(() => uploading.value)
             :disabled="saving"
             @click="saveReactionSettings"
           >
-            {{ saving ? 'Saving...' : 'Save Reaction Settings' }}
+            {{ saving ? $t('board.settings.emojis.saving') : $t('board.settings.emojis.saveReactions') }}
           </button>
           <button
             v-if="reactionEmojis.length > 0"
@@ -494,21 +483,17 @@ const formBusy = computed(() => uploading.value)
       <!-- Section B: Board Custom Emojis -->
       <!-- ============================================================ -->
       <section>
-        <h2 class="text-base font-semibold text-gray-900 mb-1">
-          Board Emojis
-        </h2>
+        <h2 class="text-base font-semibold text-gray-900 mb-1">{{ $t('board.settings.emojis.boardEmojis') }}</h2>
         <p class="text-xs text-gray-500 mb-4">
-          Custom emojis uploaded here are only available within this board. Site-wide emojis are managed by site administrators and are available everywhere.
+          {{ $t('board.settings.emojis.boardEmojisDesc') }}
         </p>
 
         <!-- Add emoji form -->
         <div class="bg-white rounded-lg border border-gray-200 p-4 mb-6 max-w-lg">
-          <h3 class="text-sm font-medium text-gray-900 mb-3">
-            Add Board Emoji
-          </h3>
+          <h3 class="text-sm font-medium text-gray-900 mb-3">{{ $t('board.settings.emojis.addBoardEmoji') }}</h3>
           <form class="space-y-3" @submit.prevent="createBoardEmoji">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Shortcode</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.emojis.shortcode') }}</label>
               <input
                 v-model="newShortcode"
                 type="text"
@@ -516,7 +501,7 @@ const formBusy = computed(() => uploading.value)
                 placeholder="e.g. board_mascot"
                 pattern="[a-z0-9_]+"
               />
-              <p class="mt-1 text-xs text-gray-500">Lowercase letters, numbers, and underscores only.</p>
+              <p class="mt-1 text-xs text-gray-500">{{ $t('board.settings.emojis.shortcodeHint') }}</p>
             </div>
 
             <!-- Input mode toggle -->
@@ -528,9 +513,7 @@ const formBusy = computed(() => uploading.value)
                   ? 'bg-primary text-white border-primary'
                   : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'"
                 @click="inputMode = 'upload'"
-              >
-                Upload File
-              </button>
+              >{{ $t('board.settings.emojis.uploadFile') }}</button>
               <button
                 type="button"
                 class="px-3 py-1 text-xs rounded-full border transition-colors"
@@ -538,21 +521,17 @@ const formBusy = computed(() => uploading.value)
                   ? 'bg-primary text-white border-primary'
                   : 'bg-white text-gray-600 border-gray-300 hover:border-gray-400'"
                 @click="inputMode = 'url'"
-              >
-                Image URL
-              </button>
+              >{{ $t('board.settings.emojis.imageUrl') }}</button>
             </div>
 
             <!-- File upload -->
             <div v-if="inputMode === 'upload'">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Emoji Image</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.emojis.emojiImage') }}</label>
               <div class="flex items-center gap-3">
                 <label class="cursor-pointer inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
                   <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Choose file
-                  <input
+                  </svg>{{ $t('board.settings.emojis.chooseFile') }}<input
                     ref="fileInput"
                     type="file"
                     accept="image/png,image/gif,image/webp,image/jpeg"
@@ -570,19 +549,19 @@ const formBusy = computed(() => uploading.value)
                   </button>
                 </div>
               </div>
-              <p class="mt-1 text-xs text-gray-500">PNG, GIF, WebP, or JPEG. Max 512x512 pixels.</p>
+              <p class="mt-1 text-xs text-gray-500">{{ $t('board.settings.emojis.fileHint') }}</p>
             </div>
 
             <!-- URL input -->
             <div v-else>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.settings.emojis.imageUrl') }}</label>
               <input
                 v-model="newImageUrl"
                 type="url"
                 class="form-input w-full"
-                placeholder="https://example.com/emoji.png"
+                :placeholder="$t('board.settings.emojis.urlPlaceholder')"
               />
-              <p class="mt-1 text-xs text-gray-500">URL to the emoji image (PNG, GIF, or WebP).</p>
+              <p class="mt-1 text-xs text-gray-500">{{ $t('board.settings.emojis.urlHint') }}</p>
             </div>
 
             <div v-if="createError" class="text-sm text-red-600">{{ createError }}</div>
@@ -592,18 +571,18 @@ const formBusy = computed(() => uploading.value)
               class="button primary"
               :disabled="formBusy || !formValid"
             >
-              {{ formBusy ? 'Adding...' : 'Add Emoji' }}
+              {{ formBusy ? $t('board.settings.emojis.adding') : $t('board.settings.emojis.addEmoji') }}
             </button>
           </form>
         </div>
 
         <!-- Board emoji list -->
         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-          Board Emojis ({{ boardEmojis.length }})
+          {{ $t('board.settings.emojis.boardEmojisCount', { count: boardEmojis.length }) }}
         </h3>
 
         <div v-if="boardEmojis.length === 0" class="text-sm text-gray-500">
-          No board-specific emojis yet. Emojis uploaded here will only be available within this board.
+          {{ $t('board.settings.emojis.noBoardEmojis') }}
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -624,9 +603,7 @@ const formBusy = computed(() => uploading.value)
               class="button button-sm red shrink-0"
               :disabled="deleting"
               @click="deleteBoardEmoji(emoji.id)"
-            >
-              Delete
-            </button>
+            >{{ $t('board.settings.emojis.delete') }}</button>
           </div>
         </div>
       </section>

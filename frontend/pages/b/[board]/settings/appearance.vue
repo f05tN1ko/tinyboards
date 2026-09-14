@@ -12,8 +12,9 @@ const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
 const { isAdmin } = useAuth()
+const { t } = useI18n()
 
-useHead({ title: `Appearance - b/${boardName}` })
+useHead({ title: t('board.settings.appearance.heading') + ' - b/' + boardName })
 
 interface BoardData {
   id: string
@@ -130,7 +131,7 @@ function insertSnippet (snippet: CssSnippet) {
   cssCode.value += `\n/* ${snippet.name} */\n${snippet.css}\n`
   showCssWizard.value = false
   showCssEditor.value = true
-  toast.success(`Inserted: ${snippet.name}`)
+  toast.success(t('board.settings.appearance.inserted', { name: snippet.name }))
 }
 
 function toggleCategory (name: string) {
@@ -141,7 +142,7 @@ async function saveSettings () {
   if (!boardId.value) return
 
   if (cssCode.value && !cssValidation.value.valid) {
-    toast.error('Please fix CSS errors before saving')
+    toast.error(t('board.settings.appearance.fixCssErrors'))
     return
   }
 
@@ -181,7 +182,7 @@ async function saveSettings () {
   })
 
   if (result) {
-    toast.success('Appearance settings saved')
+    toast.success(t('board.settings.appearance.saved'))
   }
 }
 </script>
@@ -193,31 +194,23 @@ async function saveSettings () {
       <NuxtLink
         :to="`/b/${boardName}/settings`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        General
-      </NuxtLink>
+      >{{ $t('board.settings.tabsGeneral') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/appearance`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-blue-600 text-blue-600"
-      >
-        Appearance
-      </NuxtLink>
+      >{{ $t('board.settings.tabsAppearance') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/moderation`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        Moderation
-      </NuxtLink>
+      >{{ $t('board.settings.tabsModeration') }}</NuxtLink>
       <NuxtLink
         :to="`/b/${boardName}/settings/emojis`"
         class="px-3 py-1.5 text-sm font-medium border-b-2 no-underline transition-colors border-transparent text-gray-500 hover:text-gray-700"
-      >
-        Emojis
-      </NuxtLink>
+      >{{ $t('board.settings.tabsEmojis') }}</NuxtLink>
     </div>
 
     <h2 class="text-base font-semibold text-gray-900 mb-4">
-      Board Appearance
+      {{ $t('board.settings.appearance.heading') }}
     </h2>
 
     <CommonLoadingSpinner v-if="loading" size="lg" />
@@ -226,64 +219,56 @@ async function saveSettings () {
     <form v-else class="space-y-6 max-w-2xl" @submit.prevent="saveSettings">
       <!-- Board icon -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Board Icon</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('board.settings.appearance.boardIcon') }}</label>
         <div class="flex items-center gap-4">
           <div class="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden border">
             <img v-if="iconPreview" :src="iconPreview" alt="Board icon" class="h-full w-full object-cover" />
-            <span v-else class="text-gray-400 text-xs">No icon</span>
+            <span v-else class="text-gray-400 text-xs">{{ $t('board.settings.appearance.noIcon') }}</span>
           </div>
           <div class="flex gap-2">
-            <label class="button white button-sm cursor-pointer">
-              Upload icon
-              <input type="file" accept="image/*" class="hidden" @change="handleIconSelect" />
+            <label class="button white button-sm cursor-pointer">{{ $t('board.settings.appearance.uploadIcon') }}<input type="file" accept="image/*" class="hidden" @change="handleIconSelect" />
             </label>
-            <button v-if="iconPreview" type="button" class="button white button-sm text-red-600" @click="removeIcon">
-              Remove
-            </button>
+            <button v-if="iconPreview" type="button" class="button white button-sm text-red-600" @click="removeIcon">{{ $t('board.settings.appearance.remove') }}</button>
           </div>
         </div>
       </div>
 
       <!-- Board banner -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Board Banner</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('board.settings.appearance.boardBanner') }}</label>
         <div
           class="w-full h-32 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden border"
           :style="bannerPreview ? { backgroundImage: `url(${bannerPreview})`, backgroundSize: 'cover', backgroundPosition: 'center' } : {}"
         >
-          <span v-if="!bannerPreview" class="text-gray-400 text-xs">No banner (recommended 3:1 aspect ratio)</span>
+          <span v-if="!bannerPreview" class="text-gray-400 text-xs">{{ $t('board.settings.appearance.noBanner') }}</span>
         </div>
         <div class="flex gap-2 mt-2">
-          <label class="button white button-sm cursor-pointer">
-            Upload banner
-            <input type="file" accept="image/*" class="hidden" @change="handleBannerSelect" />
+          <label class="button white button-sm cursor-pointer">{{ $t('board.settings.appearance.uploadBanner') }}<input type="file" accept="image/*" class="hidden" @change="handleBannerSelect" />
           </label>
-          <button v-if="bannerPreview" type="button" class="button white button-sm text-red-600" @click="removeBanner">
-            Remove
-          </button>
+          <button v-if="bannerPreview" type="button" class="button white button-sm text-red-600" @click="removeBanner">{{ $t('board.settings.appearance.remove') }}</button>
         </div>
       </div>
 
       <!-- Colors -->
       <div>
-        <h3 class="text-sm font-medium text-gray-700 mb-3">Board Colors</h3>
+        <h3 class="text-sm font-medium text-gray-700 mb-3">{{ $t('board.settings.appearance.boardColors') }}</h3>
         <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
           <div>
-            <label class="block text-xs text-gray-600 mb-1">Primary</label>
+            <label class="block text-xs text-gray-600 mb-1">{{ $t('board.settings.appearance.primary') }}</label>
             <div class="flex items-center gap-2">
               <input v-model="form.primaryColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
               <input v-model="form.primaryColor" type="text" class="form-input w-full font-mono text-sm" />
             </div>
           </div>
           <div>
-            <label class="block text-xs text-gray-600 mb-1">Secondary</label>
+            <label class="block text-xs text-gray-600 mb-1">{{ $t('board.settings.appearance.secondary') }}</label>
             <div class="flex items-center gap-2">
               <input v-model="form.secondaryColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
               <input v-model="form.secondaryColor" type="text" class="form-input w-full font-mono text-sm" />
             </div>
           </div>
           <div>
-            <label class="block text-xs text-gray-600 mb-1">Hover</label>
+            <label class="block text-xs text-gray-600 mb-1">{{ $t('board.settings.appearance.hover') }}</label>
             <div class="flex items-center gap-2">
               <input v-model="form.hoverColor" type="color" class="h-8 w-8 cursor-pointer rounded border" />
               <input v-model="form.hoverColor" type="text" class="form-input w-full font-mono text-sm" />
@@ -294,27 +279,21 @@ async function saveSettings () {
 
       <!-- Color preview -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">Preview</label>
+        <label class="block text-sm font-medium text-gray-700 mb-2">{{ $t('board.settings.appearance.preview') }}</label>
         <div class="rounded-lg border p-4">
           <div class="flex gap-2">
             <span
               class="inline-flex items-center rounded px-3 py-1.5 text-sm font-medium text-white"
               :style="{ backgroundColor: form.primaryColor }"
-            >
-              Primary
-            </span>
+            >{{ $t('board.settings.appearance.primary') }}</span>
             <span
               class="inline-flex items-center rounded px-3 py-1.5 text-sm font-medium text-white"
               :style="{ backgroundColor: form.secondaryColor }"
-            >
-              Secondary
-            </span>
+            >{{ $t('board.settings.appearance.secondary') }}</span>
             <span
               class="inline-flex items-center rounded px-3 py-1.5 text-sm font-medium text-white"
               :style="{ backgroundColor: form.hoverColor }"
-            >
-              Hover
-            </span>
+            >{{ $t('board.settings.appearance.hover') }}</span>
           </div>
         </div>
       </div>
@@ -323,8 +302,8 @@ async function saveSettings () {
       <div class="border-t border-gray-200 pt-6">
         <div class="flex items-center justify-between mb-3">
           <div>
-            <h3 class="text-sm font-medium text-gray-900">Custom CSS</h3>
-            <p class="text-xs text-gray-500 mt-0.5">Add custom styles that apply only to this board. Overrides site-level CSS.</p>
+            <h3 class="text-sm font-medium text-gray-900">{{ $t('board.settings.appearance.customCss') }}</h3>
+            <p class="text-xs text-gray-500 mt-0.5">{{ $t('board.settings.appearance.customCssDesc') }}</p>
           </div>
           <div class="flex gap-2">
             <button
@@ -332,15 +311,13 @@ async function saveSettings () {
               type="button"
               class="button white button-sm"
               @click="showCssWizard = true; showCssEditor = true"
-            >
-              Style Wizard
-            </button>
+            >{{ $t('board.settings.appearance.styleWizard') }}</button>
             <button
               type="button"
               class="button white button-sm"
               @click="showCssEditor = !showCssEditor"
             >
-              {{ showCssEditor ? 'Hide Editor' : 'Show Editor' }}
+              {{ showCssEditor ? $t('board.settings.appearance.hideEditor') : $t('board.settings.appearance.showEditor') }}
             </button>
           </div>
         </div>
@@ -348,8 +325,8 @@ async function saveSettings () {
         <!-- CSS Wizard (compact version) -->
         <div v-if="showCssWizard" class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
           <div class="px-3 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
-            <span class="text-xs font-medium text-gray-700">Quick Snippets</span>
-            <button type="button" class="text-xs text-gray-400 hover:text-gray-600" @click="showCssWizard = false">Close</button>
+            <span class="text-xs font-medium text-gray-700">{{ $t('board.settings.appearance.quickSnippets') }}</span>
+            <button type="button" class="text-xs text-gray-400 hover:text-gray-600" @click="showCssWizard = false">{{ $t('board.settings.appearance.close') }}</button>
           </div>
           <div class="max-h-64 overflow-y-auto divide-y divide-gray-100">
             <div v-for="category in CSS_SNIPPET_CATEGORIES" :key="category.name">
@@ -367,7 +344,7 @@ async function saveSettings () {
                     <div class="text-xs font-medium text-gray-800 truncate">{{ snippet.name }}</div>
                     <div class="text-xs text-gray-500 truncate">{{ snippet.description }}</div>
                   </div>
-                  <button type="button" class="shrink-0 text-xs text-primary hover:underline" @click="insertSnippet(snippet)">Insert</button>
+                  <button type="button" class="shrink-0 text-xs text-primary hover:underline" @click="insertSnippet(snippet)">{{ $t('board.settings.appearance.insert') }}</button>
                 </div>
               </div>
             </div>
@@ -385,7 +362,7 @@ async function saveSettings () {
           />
           <div class="flex items-center justify-between text-xs">
             <div>
-              <span v-if="cssCode && cssValidation.valid" class="text-green-600">&#10003; Valid CSS</span>
+              <span v-if="cssCode && cssValidation.valid" class="text-green-600">&#10003; {{ $t('board.settings.appearance.validCss') }}</span>
               <span v-else-if="cssCode && !cssValidation.valid" class="text-red-600">
                 &#10007; {{ cssValidation.errors[0] }}
               </span>
@@ -397,7 +374,7 @@ async function saveSettings () {
 
       <div>
         <button type="submit" class="button primary" :disabled="saving">
-          {{ saving ? 'Saving...' : 'Save Appearance' }}
+          {{ saving ? $t('board.settings.appearance.saving') : $t('board.settings.appearance.saveAppearance') }}
         </button>
       </div>
     </form>

@@ -2,6 +2,8 @@
 import { useUser } from '~/composables/useUser'
 import { formatDate } from '~/utils/date'
 
+const { t, locale } = useI18n()
+
 const route = useRoute()
 
 const username = computed(() => {
@@ -20,6 +22,10 @@ function formatNumber (n: number): string {
   if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
   if (n >= 1000) return `${(n / 1000).toFixed(1)}K`
   return n.toString()
+}
+
+function formatDateLocalized (dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString(locale.value === 'zh-CN' ? 'zh-CN' : 'en-US')
 }
 </script>
 
@@ -54,31 +60,31 @@ function formatNumber (n: number): string {
       <!-- User stats -->
       <div class="bg-white rounded-lg border border-gray-200 p-4">
         <h4 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          Activity
+          {{ $t('profile.sidebar.activity') }}
         </h4>
         <div class="grid grid-cols-2 gap-3 text-center sm:text-left">
           <div>
             <div class="text-lg font-bold text-gray-900 tabular-nums">{{ formatNumber(user.postCount ?? 0) }}</div>
-            <div class="text-[11px] text-gray-500">Posts</div>
+            <div class="text-[11px] text-gray-500">{{ $t('profile.tabs.posts') }}</div>
           </div>
           <div>
             <div class="text-lg font-bold text-gray-900 tabular-nums">{{ formatNumber(user.commentCount ?? 0) }}</div>
-            <div class="text-[11px] text-gray-500">Comments</div>
+            <div class="text-[11px] text-gray-500">{{ $t('profile.tabs.comments') }}</div>
           </div>
           <div>
             <div class="text-lg font-bold text-gray-900 tabular-nums">{{ formatNumber(user.postScore ?? 0) }}</div>
-            <div class="text-[11px] text-gray-500">Post Karma</div>
+            <div class="text-[11px] text-gray-500">{{ $t('profile.postKarma') }}</div>
           </div>
           <div>
             <div class="text-lg font-bold text-gray-900 tabular-nums">{{ formatNumber(user.commentScore ?? 0) }}</div>
-            <div class="text-[11px] text-gray-500">Comment Karma</div>
+            <div class="text-[11px] text-gray-500">{{ $t('profile.commentKarma') }}</div>
           </div>
         </div>
         <div class="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-500 flex items-center gap-1.5">
           <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
           </svg>
-          Joined {{ formatDate(user.createdAt) }}
+          {{ $t('profile.joined') }} {{ formatDateLocalized(user.createdAt) }}
         </div>
       </div>
     </template>

@@ -2,7 +2,8 @@
 import { useNotifications } from '~/composables/useNotifications'
 
 definePageMeta({ middleware: 'guards' })
-useHead({ title: 'Inbox' })
+const { t } = useI18n()
+useHead({ title: () => t('inbox.title') })
 
 const {
   notifications,
@@ -19,13 +20,13 @@ const {
 const unreadOnly = ref(false)
 const kindFilter = ref<string | null>(null)
 
-const filters = [
-  { value: null, label: 'All' },
-  { value: 'replies', label: 'Replies' },
-  { value: 'mention', label: 'Mentions' },
-  { value: 'private_message', label: 'Messages' },
-  { value: 'activity', label: 'Activity' },
-]
+const filters = computed(() => [
+  { value: null, label: t('inbox.filter.all') },
+  { value: 'replies', label: t('inbox.filter.replies') },
+  { value: 'mention', label: t('inbox.filter.mentions') },
+  { value: 'private_message', label: t('inbox.filter.privateMessage') },
+  { value: 'activity', label: t('inbox.filter.activity') },
+])
 
 async function refresh (): Promise<void> {
   await fetchNotifications({
@@ -81,24 +82,24 @@ await refresh()
     <div class="bg-white rounded-lg border border-gray-200 px-4 py-3 mb-4">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
         <h1 class="text-lg font-semibold text-gray-900">
-          Notifications
+          {{ $t('inbox.notifications') }}
         </h1>
         <div class="flex items-center gap-2 flex-wrap">
           <NuxtLink to="/inbox/messages" class="button button-sm white no-underline inline-flex items-center gap-1">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
             </svg>
-            Messages
+            {{ $t('inbox.messages') }}
           </NuxtLink>
           <button
             class="button button-sm"
             :class="unreadOnly ? 'primary' : 'white'"
             @click="toggleUnread"
           >
-            {{ unreadOnly ? 'Showing unread' : 'Unread only' }}
+            {{ unreadOnly ? $t('inbox.showingUnread') : $t('inbox.unreadOnly') }}
           </button>
           <button class="button button-sm white" @click="handleMarkAllRead">
-            Mark all read
+            {{ $t('inbox.markAllRead') }}
           </button>
         </div>
       </div>
@@ -147,7 +148,9 @@ await refresh()
       <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
       </svg>
-      <p class="text-sm text-gray-500">No notifications{{ unreadOnly ? ' (unread)' : '' }}.</p>
+      <p class="text-sm text-gray-500">
+        {{ unreadOnly ? $t('inbox.noNotificationsUnread') : $t('inbox.noNotifications') }}
+      </p>
     </div>
 
     <CommonPagination

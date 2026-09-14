@@ -5,7 +5,8 @@ import { useFlairs } from '~/composables/useFlairs'
 import type { Post, Board } from '~/types/generated'
 
 definePageMeta({ middleware: 'guards' })
-useHead({ title: 'Submit' })
+const { t } = useI18n()
+useHead({ title: () => t('submit.title') })
 
 const CREATE_POST_MUTATION = `
   mutation CreatePost($title: String!, $board: String, $body: String, $link: String, $isNSFW: Boolean, $altText: String, $postType: String) {
@@ -126,9 +127,13 @@ function modeBadgeClass (mode: string | undefined): string {
 }
 
 function modeBadgeLabel (mode: string | undefined): string {
-  if (mode === 'forum') return '💬 Forum'
-  return '📰 Feed'
+  if (mode === 'forum') return t('submit.forumBadge')
+  return t('submit.feedBadge')
 }
+
+const submitLabel = computed(() =>
+  loading.value || fileUploading.value ? t('submit.submitting') : t('submit.submit'),
+)
 
 async function handleSubmit (data: { title: string; body: string; url: string; file: File | null; altText: string }): Promise<void> {
   let result: CreatePostResponse | null = null
@@ -183,19 +188,19 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
 <template>
   <div class="max-w-2xl mx-auto px-4 py-4">
     <h1 class="text-lg font-semibold text-gray-900 mb-4">
-      Create a Post
+      {{ $t('submit.createPost') }}
     </h1>
 
     <div class="mb-4 space-y-3">
       <!-- Board selector with search -->
       <div class="relative">
-        <label for="board-search" class="block text-sm font-medium text-gray-700 mb-1">Board</label>
+        <label for="board-search" class="block text-sm font-medium text-gray-700 mb-1">{{ $t('submit.board') }}</label>
         <input
           id="board-search"
           v-model="boardSearch"
           type="text"
           class="form-input"
-          placeholder="Search for a board..."
+          :placeholder="$t('submit.searchBoard')"
           autocomplete="off"
           @focus="boardSearch.trim() && boardResults.length ? showBoardDropdown = true : null"
         >
@@ -237,16 +242,16 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
           {{ modeBadgeLabel(selectedBoard.mode) }}
         </span>
         <span v-if="selectedBoard.mode === 'forum'">
-          This is a forum board &mdash; your post will be a discussion thread.
+          {{ $t('submit.forumHint') }}
         </span>
         <span v-else>
-          This is a feed board &mdash; share links, images, or text.
+          {{ $t('submit.feedHint') }}
         </span>
       </div>
 
       <!-- Post flair selector -->
       <div v-if="flairs.length > 0">
-        <label class="block text-sm font-medium text-gray-700 mb-1">Post Flair</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('submit.postFlair') }}</label>
         <div class="flex flex-wrap gap-2">
           <button
             v-for="flair in flairs"
@@ -264,7 +269,7 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
 
       <label class="flex items-center gap-2">
         <input v-model="isNSFW" type="checkbox" class="form-checkbox" />
-        <span class="text-sm text-gray-700">Mark as NSFW</span>
+        <span class="text-sm text-gray-700">{{ $t('submit.markNsfw') }}</span>
       </label>
     </div>
 
@@ -274,7 +279,7 @@ async function handleSubmit (data: { title: string; body: string; url: string; f
     <PostForm
       :board-name="boardName"
       :board-id="boardId ?? undefined"
-      :submit-label="loading || fileUploading ? 'Submitting...' : 'Submit'"
+      :submit-label="submitLabel"
       @submit="handleSubmit"
     />
   </div>

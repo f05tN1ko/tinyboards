@@ -36,7 +36,6 @@ pub struct User {
     pub theme: String,
     pub default_sort_type: DbSortType,
     pub default_listing_type: DbListingType,
-    pub interface_language: String,
     pub is_email_notifications_enabled: bool,
     pub editor_mode: DbEditorMode,
     pub last_seen_at: DateTime<Utc>,
@@ -113,7 +112,6 @@ pub struct UserInsertForm {
     pub theme: String,
     pub default_sort_type: DbSortType,
     pub default_listing_type: DbListingType,
-    pub interface_language: String,
     pub is_email_notifications_enabled: bool,
     pub editor_mode: DbEditorMode,
 }
@@ -149,7 +147,6 @@ pub struct UserUpdateForm {
     pub theme: Option<String>,
     pub default_sort_type: Option<DbSortType>,
     pub default_listing_type: Option<DbListingType>,
-    pub interface_language: Option<String>,
     pub is_email_notifications_enabled: Option<bool>,
     pub editor_mode: Option<DbEditorMode>,
     pub last_seen_at: Option<DateTime<Utc>>,

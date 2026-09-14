@@ -6,6 +6,7 @@ import { useAuthStore } from '~/stores/auth'
 const route = useRoute()
 const boardName = route.params.board as string
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const { board, isSubscribed, loading, error, fetchBoard, subscribe, unsubscribe } = useBoard()
 
@@ -18,8 +19,8 @@ useHead({
 useSeoMeta({
   title: computed(() => board.value?.title ?? boardName),
   ogTitle: computed(() => board.value?.title ?? boardName),
-  description: computed(() => board.value?.description || `Posts in +${boardName}`),
-  ogDescription: computed(() => board.value?.description || `Posts in +${boardName}`),
+  description: computed(() => board.value?.description || t('board.seo.descriptionFallback', { board: boardName })),
+  ogDescription: computed(() => board.value?.description || t('board.seo.descriptionFallback', { board: boardName })),
   ogImage: computed(() => board.value?.icon || undefined),
   ogType: 'website',
 })

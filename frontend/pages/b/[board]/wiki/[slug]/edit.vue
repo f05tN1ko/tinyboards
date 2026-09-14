@@ -9,8 +9,9 @@ const route = useRoute()
 const boardName = route.params.board as string
 const slug = route.params.slug as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Edit - ${slug}` })
+useHead({ title: () => t('board.wiki.editTitle', { slug }) })
 
 const { page, loading, fetchPage, updatePage } = useWiki()
 const boardId = ref<string | null>(null)
@@ -64,10 +65,10 @@ async function handleSubmit () {
   saving.value = false
 
   if (success) {
-    toast.success('Wiki page updated')
+    toast.success(t('board.wiki.updated'))
     await navigateTo(`/b/${boardName}/wiki/${slug}`)
   } else {
-    toast.error('Failed to update wiki page')
+    toast.error(t('board.wiki.updateFailed'))
   }
 }
 </script>
@@ -77,26 +78,26 @@ async function handleSubmit () {
     <nav class="text-sm text-gray-500 mb-4">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-gray-700">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">Wiki</NuxtLink>
+      <NuxtLink :to="`/b/${boardName}/wiki`" class="hover:text-gray-700">{{ $t('board.wiki.breadcrumbWiki') }}</NuxtLink>
       <span class="mx-1">/</span>
       <NuxtLink :to="`/b/${boardName}/wiki/${slug}`" class="hover:text-gray-700">{{ page?.title ?? slug }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span>Edit</span>
+      <span>{{ $t('board.wiki.edit') }}</span>
     </nav>
 
-    <h1 class="text-lg font-semibold text-gray-900 mb-6">Edit Wiki Page</h1>
+    <h1 class="text-lg font-semibold text-gray-900 mb-6">{{ $t('board.wiki.editHeading') }}</h1>
 
     <CommonLoadingSpinner v-if="loading" />
 
     <form v-else-if="page" class="space-y-5 max-w-2xl" @submit.prevent="handleSubmit">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.wiki.titleLabel') }}</label>
         <input :value="title" type="text" class="form-input w-full" disabled />
-        <p class="text-xs text-gray-500 mt-1">Title cannot be changed after creation.</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $t('board.wiki.titleLocked') }}</p>
       </div>
 
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('board.wiki.contentLabel') }}</label>
         <ClientOnly>
           <textarea v-model="body" rows="16" class="form-input w-full font-mono text-sm" required />
         </ClientOnly>
@@ -104,9 +105,9 @@ async function handleSubmit () {
 
       <div class="flex gap-3">
         <button type="submit" class="button primary" :disabled="saving || !body.trim()">
-          {{ saving ? 'Saving...' : 'Save Changes' }}
+          {{ saving ? $t('board.wiki.saving') : $t('board.wiki.saveChanges') }}
         </button>
-        <NuxtLink :to="`/b/${boardName}/wiki/${slug}`" class="button white">Cancel</NuxtLink>
+        <NuxtLink :to="`/b/${boardName}/wiki/${slug}`" class="button white">{{ $t('common.cancel') }}</NuxtLink>
       </div>
     </form>
   </div>

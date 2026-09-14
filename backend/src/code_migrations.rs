@@ -109,7 +109,6 @@ async fn initialize_site_and_admin_user(
             theme: "default".to_string(),
             default_sort_type: DbSortType::Hot,
             default_listing_type: DbListingType::All,
-            interface_language: "en".to_string(),
             is_email_notifications_enabled: false,
             editor_mode: DbEditorMode::RichText,
         };

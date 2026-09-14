@@ -7,8 +7,9 @@ definePageMeta({ middleware: 'guards' })
 const route = useRoute()
 const boardName = route.params.board as string
 const toast = useToast()
+const { t } = useI18n()
 
-useHead({ title: `Mod Queue - b/${boardName}` })
+useHead({ title: t('board.mod.queueTitle', { board: boardName }) })
 
 interface PostReportView {
   id: string
@@ -135,14 +136,14 @@ async function changeFilter (filter: string) {
 async function resolveReport (reportId: string, type: string) {
   const { execute } = useGraphQL()
   await execute(RESOLVE_REPORT_MUTATION, { variables: { reportId, reportType: type } })
-  toast.success('Report resolved')
+  toast.success(t('board.mod.resolved'))
   await loadReports()
 }
 
 async function dismissReport (reportId: string, type: string) {
   const { execute } = useGraphQL()
   await execute(DISMISS_REPORT_MUTATION, { variables: { reportId, reportType: type } })
-  toast.success('Report dismissed')
+  toast.success(t('board.mod.dismissed'))
   await loadReports()
 }
 
@@ -164,6 +165,12 @@ function statusBadgeClass (status: string): string {
     default: return 'bg-gray-100 text-gray-800'
   }
 }
+
+const statusFilterOptions = computed(() => [
+  { value: 'pending', label: t('board.mod.pending') },
+  { value: 'resolved', label: t('board.mod.resolvedStatus') },
+  { value: 'dismissed', label: t('board.mod.dismissedStatus') },
+])
 </script>
 
 <template>
@@ -172,32 +179,32 @@ function statusBadgeClass (status: string): string {
     <nav class="text-sm text-gray-500 mb-2">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-primary no-underline">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span class="text-gray-700">Moderation</span>
+      <span class="text-gray-700">{{ $t('board.mod.moderation') }}</span>
     </nav>
 
     <!-- Header card with tabs -->
     <div class="bg-white rounded-lg border border-gray-200 mb-4 overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200">
-        <h1 class="text-lg font-semibold text-gray-900">Moderation Queue</h1>
+        <h1 class="text-lg font-semibold text-gray-900">{{ $t('board.mod.queueHeading') }}</h1>
       </div>
       <div class="px-4 flex gap-0.5 border-b border-gray-100">
         <NuxtLink
           :to="`/b/${boardName}/mod/queue`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-primary text-primary"
         >
-          Reports
+          {{ $t('board.mod.reports') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/log`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Mod Log
+          {{ $t('board.mod.modLog') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/bans`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Bans
+          {{ $t('board.mod.bans') }}
         </NuxtLink>
       </div>
     </div>
@@ -210,26 +217,26 @@ function statusBadgeClass (status: string): string {
           :class="activeTab === 'posts' ? 'primary' : 'white'"
           @click="switchTab('posts')"
         >
-          Post Reports
+          {{ $t('board.mod.postReports') }}
         </button>
         <button
           class="button button-sm"
           :class="activeTab === 'comments' ? 'primary' : 'white'"
           @click="switchTab('comments')"
         >
-          Comment Reports
+          {{ $t('board.mod.commentReports') }}
         </button>
       </div>
       <div class="w-px h-6 bg-gray-200" />
       <div class="flex gap-1">
         <button
-          v-for="filter in ['pending', 'resolved', 'dismissed']"
-          :key="filter"
+          v-for="filter in statusFilterOptions"
+          :key="filter.value"
           class="button button-sm"
-          :class="statusFilter === filter ? 'primary' : 'white'"
-          @click="changeFilter(filter)"
+          :class="statusFilter === filter.value ? 'primary' : 'white'"
+          @click="changeFilter(filter.value)"
         >
-          {{ filter.charAt(0).toUpperCase() + filter.slice(1) }}
+          {{ filter.label }}
         </button>
       </div>
     </div>
@@ -239,7 +246,7 @@ function statusBadgeClass (status: string): string {
     <!-- Post reports -->
     <template v-else-if="activeTab === 'posts'">
       <div v-if="postReports.length === 0" class="text-sm text-gray-500">
-        No post reports found.
+        {{ $t('board.mod.noPostReports') }}
       </div>
       <div v-else class="space-y-4">
         <div
@@ -252,7 +259,7 @@ function statusBadgeClass (status: string): string {
               <h3 class="text-sm font-medium text-gray-900 truncate">
                 {{ report.originalPostTitle }}
               </h3>
-              <p class="mt-1 text-sm text-gray-600">Reason: {{ report.reason }}</p>
+              <p class="mt-1 text-sm text-gray-600">{{ $t('board.mod.reason', { reason: report.reason }) }}</p>
               <p class="mt-1 text-xs text-gray-500">{{ formatDate(report.createdAt) }}</p>
             </div>
             <div class="ml-4 flex items-center gap-2">
@@ -264,10 +271,10 @@ function statusBadgeClass (status: string): string {
               </span>
               <template v-if="report.status === 'pending'">
                 <button class="button button-sm white text-green-700" @click="resolveReport(report.id, 'post')">
-                  Resolve
+                  {{ $t('board.mod.resolve') }}
                 </button>
                 <button class="button button-sm white text-gray-600" @click="dismissReport(report.id, 'post')">
-                  Dismiss
+                  {{ $t('board.mod.dismiss') }}
                 </button>
               </template>
             </div>
@@ -279,7 +286,7 @@ function statusBadgeClass (status: string): string {
     <!-- Comment reports -->
     <template v-else>
       <div v-if="commentReports.length === 0" class="text-sm text-gray-500">
-        No comment reports found.
+        {{ $t('board.mod.noCommentReports') }}
       </div>
       <div v-else class="space-y-4">
         <div
@@ -290,7 +297,7 @@ function statusBadgeClass (status: string): string {
           <div class="flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <p class="text-sm text-gray-900 line-clamp-2">{{ report.originalCommentText }}</p>
-              <p class="mt-1 text-sm text-gray-600">Reason: {{ report.reason }}</p>
+              <p class="mt-1 text-sm text-gray-600">{{ $t('board.mod.reason', { reason: report.reason }) }}</p>
               <p class="mt-1 text-xs text-gray-500">{{ formatDate(report.createdAt) }}</p>
             </div>
             <div class="ml-4 flex items-center gap-2">
@@ -302,10 +309,10 @@ function statusBadgeClass (status: string): string {
               </span>
               <template v-if="report.status === 'pending'">
                 <button class="button button-sm white text-green-700" @click="resolveReport(report.id, 'comment')">
-                  Resolve
+                  {{ $t('board.mod.resolve') }}
                 </button>
                 <button class="button button-sm white text-gray-600" @click="dismissReport(report.id, 'comment')">
-                  Dismiss
+                  {{ $t('board.mod.dismiss') }}
                 </button>
               </template>
             </div>

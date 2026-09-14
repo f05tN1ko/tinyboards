@@ -7,6 +7,7 @@ const props = defineProps<{
 }>()
 
 const route = useRoute()
+const { t } = useI18n()
 
 interface TabItem {
   label: string
@@ -19,22 +20,22 @@ const tabs = computed<TabItem[]>(() => {
   const boardMode = props.mode ?? 'feed'
 
   if (boardMode === 'feed') {
-    base.push({ label: 'Posts', to: `/b/${props.boardName}`, icon: 'feed' })
+    base.push({ label: t('board.tabs.posts'), to: `/b/${props.boardName}`, icon: 'feed' })
   } else {
-    base.push({ label: 'Discussions', to: `/b/${props.boardName}`, icon: 'threads' })
+    base.push({ label: t('board.tabs.discussions'), to: `/b/${props.boardName}`, icon: 'threads' })
   }
 
   if (props.wikiEnabled) {
-    base.push({ label: 'Wiki', to: `/b/${props.boardName}/wiki`, icon: 'wiki' })
+    base.push({ label: t('board.tabs.wiki'), to: `/b/${props.boardName}/wiki`, icon: 'wiki' })
   }
 
-  base.push({ label: 'Members', to: `/b/${props.boardName}/members`, icon: 'members' })
+  base.push({ label: t('board.tabs.members'), to: `/b/${props.boardName}/members`, icon: 'members' })
 
   if (props.isMod) {
     base.push(
-      { label: 'Flairs', to: `/b/${props.boardName}/flairs` },
-      { label: 'Settings', to: `/b/${props.boardName}/settings` },
-      { label: 'Mod', to: `/b/${props.boardName}/mod/queue` },
+      { label: t('board.tabs.flairs'), to: `/b/${props.boardName}/flairs` },
+      { label: t('board.tabs.settings'), to: `/b/${props.boardName}/settings` },
+      { label: t('board.tabs.mod'), to: `/b/${props.boardName}/mod/queue` },
     )
   }
 

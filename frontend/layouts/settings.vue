@@ -1,12 +1,14 @@
 <script setup lang="ts">
-const settingsNav = [
-  { label: 'Account', to: '/settings/account', icon: 'account' },
-  { label: 'Profile', to: '/settings/profile', icon: 'profile' },
-  { label: 'Appearance', to: '/settings/appearance', icon: 'appearance' },
-  { label: 'Notifications', to: '/settings/notifications', icon: 'notifications' },
-  { label: 'Privacy', to: '/settings/privacy', icon: 'privacy' },
-  { label: 'Security', to: '/settings/security', icon: 'security' },
-]
+const { t } = useI18n()
+
+const settingsNav = computed(() => [
+  { label: t('settings.nav.account'), to: '/settings/account', icon: 'account' },
+  { label: t('settings.nav.profile'), to: '/settings/profile', icon: 'profile' },
+  { label: t('settings.nav.appearance'), to: '/settings/appearance', icon: 'appearance' },
+  { label: t('settings.nav.notifications'), to: '/settings/notifications', icon: 'notifications' },
+  { label: t('settings.nav.privacy'), to: '/settings/privacy', icon: 'privacy' },
+  { label: t('settings.nav.security'), to: '/settings/security', icon: 'security' },
+])
 
 const mobileNavOpen = ref(false)
 </script>
@@ -24,7 +26,7 @@ const mobileNavOpen = ref(false)
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
         </svg>
-        Settings Menu
+        {{ $t('settings.menu') }}
         <svg
           class="w-4 h-4 ml-auto transition-transform"
           :class="{ 'rotate-180': mobileNavOpen }"
@@ -53,7 +55,7 @@ const mobileNavOpen = ref(false)
         <nav class="w-52 shrink-0 hidden lg:block">
           <div class="bg-white rounded-lg border border-gray-200 overflow-hidden sticky top-20">
             <div class="px-4 py-3 bg-primary text-white">
-              <h2 class="font-semibold text-sm">Settings</h2>
+              <h2 class="font-semibold text-sm">{{ $t('settings.panel') }}</h2>
             </div>
             <ul class="p-2 space-y-0.5">
               <li v-for="item in settingsNav" :key="item.to">

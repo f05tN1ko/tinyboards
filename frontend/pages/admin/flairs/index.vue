@@ -1,21 +1,13 @@
 <script setup lang="ts">
 import { useGraphQL, useGraphQLMutation } from '~/composables/useGraphQL'
+import { useToast } from '~/composables/useToast'
+
+const { t } = useI18n()
 
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Admin - Flairs' })
+useHead({ title: () => t('admin.flairs.indexTitle') })
 
-interface FlairTemplate {
-  id: string
-  boardId: string
-  flairType: string
-  templateName: string
-  textDisplay: string
-  textColor: string
-  backgroundColor: string
-  isModOnly: boolean
-  isActive: boolean
-  usageCount: number
-}
+const toast = useToast()
 
 interface Board {
   id: string
@@ -23,82 +15,103 @@ interface Board {
   title: string
 }
 
-const { execute: fetchBoards, data: boardData } = useGraphQL<{ listBoards: Board[] }>()
-const { execute: fetchFlairs, loading, error, data: flairData } = useGraphQL<{ manageBoardFlairs: FlairTemplate[] }>()
-const { execute: executeDelete, loading: deleting } = useGraphQLMutation<{ deleteFlairTemplate: boolean }>()
+interface Flair {
+  id: string
+  templateName: string
+  textDisplay: string | null
+  textColor: string
+  backgroundColor: string
+  flairType: string
+  usageCount: number
+  isModOnly: boolean
+  isActive: boolean
+}
+
+interface ListBoardsResponse {
+  listBoards: Board[]
+}
+
+interface ListFlairsResponse {
+  listFlairs: Flair[]
+}
+
+const { execute: executeBoards, data: boardsData } = useGraphQL<ListBoardsResponse>()
+const { execute: executeFlairs, loading, error, data: flairsData } = useGraphQL<ListFlairsResponse>()
+const { execute: executeDelete, loading: deleting } = useGraphQLMutation()
 
 const selectedBoardId = ref<string | null>(null)
 
 const BOARDS_QUERY = `
-  query { listBoards(limit: 100) { id name title } }
+  query { listBoards { id name title } }
 `
 
 const FLAIRS_QUERY = `
-  query ManageBoardFlairs($boardId: ID!) {
-    manageBoardFlairs(boardId: $boardId) {
-      id boardId flairType templateName textDisplay textColor backgroundColor
-      isModOnly isActive usageCount
+  query ListFlairs($boardId: ID!) {
+    listFlairs(boardId: $boardId) {
+      id templateName textDisplay textColor backgroundColor flairType usageCount isModOnly isActive
     }
   }
 `
 
 const DELETE_FLAIR = `
-  mutation DeleteFlairTemplate($templateId: ID!) {
-    deleteFlairTemplate(templateId: $templateId)
+  mutation DeleteFlair($flairId: ID!) {
+    deleteFlair(flairId: $flairId)
   }
 `
 
-async function loadFlairs () {
-  if (!selectedBoardId.value) return
-  await fetchFlairs(FLAIRS_QUERY, { variables: { boardId: selectedBoardId.value } })
+const boards = computed(() => boardsData.value?.listBoards ?? [])
+const flairs = computed(() => flairsData.value?.listFlairs ?? [])
+
+onMounted(async () => {
+  await executeBoards(BOARDS_QUERY)
+})
+
+watch(selectedBoardId, async (newId) => {
+  if (newId) {
+    await executeFlairs(FLAIRS_QUERY, { variables: { boardId: newId } })
+  }
+})
+
+function selectBoard (id: string) {
+  selectedBoardId.value = id
 }
 
 async function deleteFlair (id: string) {
-  await executeDelete(DELETE_FLAIR, { variables: { templateId: id } })
-  await loadFlairs()
+  await executeDelete(DELETE_FLAIR, { variables: { flairId: id } })
+  if (selectedBoardId.value) {
+    await executeFlairs(FLAIRS_QUERY, { variables: { boardId: selectedBoardId.value } })
+  }
 }
-
-async function selectBoard (boardId: string) {
-  selectedBoardId.value = boardId
-  await loadFlairs()
-}
-
-onMounted(async () => {
-  await fetchBoards(BOARDS_QUERY)
-})
-
-const boards = computed(() => boardData.value?.listBoards ?? [])
-const flairs = computed(() => flairData.value?.manageBoardFlairs ?? [])
 </script>
 
 <template>
   <div>
     <div class="flex items-center justify-between mb-6">
       <h2 class="text-lg font-semibold text-gray-900">
-        Flair Management
+        {{ $t('admin.flairs.indexTitle') }}
       </h2>
       <NuxtLink
         v-if="selectedBoardId"
         :to="`/admin/flairs/create?boardId=${selectedBoardId}`"
         class="button primary button-sm"
       >
-        Create Flair
+        {{ $t('admin.flairs.create') }}
       </NuxtLink>
     </div>
 
     <p class="text-sm text-gray-500 mb-4">
-      Flairs are managed per-board. Select a board to view and manage its flairs.
+      {{ $t('admin.flairs.description') }}
     </p>
 
     <div class="mb-6">
-      <label class="block text-sm font-medium text-gray-700 mb-1">Board</label>
+      <label class="block text-sm font-medium text-gray-700 mb-1">{{ $t('admin.flairs.board') }}</label>
       <select
         class="form-input w-full max-w-sm"
         :value="selectedBoardId ?? ''"
         @change="selectBoard(($event.target as HTMLSelectElement).value)"
       >
         <option value="" disabled>
-          Select a board...
+          {{ $t('admin.flairs.selectBoard') }}
         </option>
         <option v-for="board in boards" :key="board.id" :value="board.id">
           +{{ board.name }} ({{ board.title }})
@@ -111,7 +124,7 @@ const flairs = computed(() => flairData.value?.manageBoardFlairs ?? [])
       <CommonErrorDisplay v-else-if="error" :message="error.message" />
 
       <div v-else-if="flairs.length === 0" class="text-sm text-gray-500">
-        No flairs found for this board.
+        {{ $t('admin.flairs.noFlairs') }}
       </div>
 
       <div v-else class="space-y-3">
@@ -130,26 +143,26 @@ const flairs = computed(() => flairData.value?.manageBoardFlairs ?? [])
             <div>
               <span class="text-sm text-gray-900">{{ flair.templateName }}</span>
               <span class="ml-2 text-xs text-gray-500">
-                {{ flair.flairType }} &middot; {{ flair.usageCount }} uses
+                {{ flair.flairType }} &middot; {{ $t('admin.flairs.uses', { count: flair.usageCount }) }}
               </span>
               <span v-if="flair.isModOnly" class="ml-2 text-xs text-orange-600">
-                Mod only
+                {{ $t('admin.flairs.modOnly') }}
               </span>
               <span v-if="!flair.isActive" class="ml-2 text-xs text-red-600">
-                Inactive
+                {{ $t('admin.flairs.inactive') }}
               </span>
             </div>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <NuxtLink :to="`/admin/flairs/${flair.id}/edit`" class="button button-sm white">
-              Edit
+              {{ $t('admin.flairs.edit') }}
             </NuxtLink>
             <button
               class="button button-sm red"
               :disabled="deleting"
               @click="deleteFlair(flair.id)"
             >
-              Delete
+              {{ $t('admin.flairs.delete') }}
             </button>
           </div>
         </div>

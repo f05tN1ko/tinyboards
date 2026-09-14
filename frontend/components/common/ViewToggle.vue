@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { useUIStore } from '~/stores/ui'
 
+const { t } = useI18n()
+
 const uiStore = useUIStore()
 </script>
 
@@ -11,7 +13,7 @@ const uiStore = useUIStore()
       :class="uiStore.postViewMode === 'expanded'
         ? 'bg-primary/10 text-primary'
         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'"
-      aria-label="Expanded view"
+      :aria-label="$t('viewToggle.expanded')"
       @click="uiStore.setPostViewMode('expanded')"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,7 +25,7 @@ const uiStore = useUIStore()
       :class="uiStore.postViewMode === 'compact'
         ? 'bg-primary/10 text-primary'
         : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'"
-      aria-label="Compact view"
+      :aria-label="$t('viewToggle.compact')"
       @click="uiStore.setPostViewMode('compact')"
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

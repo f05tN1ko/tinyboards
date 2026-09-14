@@ -8,6 +8,7 @@ import { timeAgo, formatDate } from '~/utils/date'
 const route = useRoute()
 const boardName = route.params.board as string
 const authStore = useAuthStore()
+const { t } = useI18n()
 
 const { board } = useBoard()
 
@@ -103,7 +104,7 @@ function getLastReply (threadId: string) {
           :to="`/b/${boardName}/submit?type=thread`"
           class="button button-sm primary no-underline"
         >
-          New Discussion
+          {{ t('board.forum.newDiscussion') }}
         </NuxtLink>
       </div>
 
@@ -115,17 +116,17 @@ function getLastReply (threadId: string) {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
           </svg>
         </div>
-        <p class="text-sm font-medium text-gray-600 mb-1">No discussions yet</p>
-        <p class="text-xs text-gray-400">Start a discussion!</p>
+        <p class="text-sm font-medium text-gray-600 mb-1">{{ t('board.forum.noDiscussions') }}</p>
+        <p class="text-xs text-gray-400">{{ t('board.forum.startDiscussion') }}</p>
       </div>
 
       <div v-else-if="!loading" class="forum-thread-list">
         <!-- Table header -->
         <div class="forum-header">
-          <div class="forum-header-topic">Topic</div>
-          <div class="forum-header-participants">Participants</div>
-          <div class="forum-header-stats">Replies</div>
-          <div class="forum-header-activity">Last Post</div>
+          <div class="forum-header-topic">{{ t('board.forum.topic') }}</div>
+          <div class="forum-header-participants">{{ t('board.forum.participants') }}</div>
+          <div class="forum-header-stats">{{ t('board.forum.replies') }}</div>
+          <div class="forum-header-activity">{{ t('board.forum.lastPost') }}</div>
         </div>
 
         <!-- Pinned threads -->
@@ -146,15 +147,15 @@ function getLastReply (threadId: string) {
             </div>
             <div class="forum-thread-content">
               <div class="forum-thread-title-row">
-                <span class="forum-pin-badge">Pinned</span>
-                <span v-if="isThreadNew(thread)" class="forum-new-badge">New</span>
-                <span v-if="thread.isLocked" class="forum-lock-badge" title="Locked">
+                <span class="forum-pin-badge">{{ t('board.forum.pinned') }}</span>
+                <span v-if="isThreadNew(thread)" class="forum-new-badge">{{ t('board.forum.new') }}</span>
+                <span v-if="thread.isLocked" class="forum-lock-badge" :title="t('board.forum.locked')">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                 </span>
                 <h3 class="forum-thread-title">{{ thread.title }}</h3>
               </div>
               <p class="forum-thread-meta">
-                by <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || 'unknown' }}</span>
+                {{ t('board.forum.by') }} <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || t('board.forum.unknown') }}</span>
                 &middot;
                 <time :datetime="thread.createdAt" :title="thread.createdAt">{{ formatDate(thread.createdAt) }}</time>
               </p>
@@ -178,7 +179,7 @@ function getLastReply (threadId: string) {
             </div>
             <div class="forum-thread-stats">
               <span class="forum-stat-number">{{ thread.commentCount }}</span>
-              <span class="forum-stat-label">{{ thread.commentCount === 1 ? 'reply' : 'replies' }}</span>
+              <span class="forum-stat-label">{{ thread.commentCount === 1 ? t('board.forum.reply') : t('board.forum.repliesPlural') }}</span>
             </div>
             <div class="forum-thread-last-post">
               <template v-if="getLastReply(thread.id)">
@@ -210,14 +211,14 @@ function getLastReply (threadId: string) {
           </div>
           <div class="forum-thread-content">
             <div class="forum-thread-title-row">
-              <span v-if="isThreadNew(thread)" class="forum-new-badge">New</span>
-              <span v-if="thread.isLocked" class="forum-lock-badge" title="Locked">
+              <span v-if="isThreadNew(thread)" class="forum-new-badge">{{ t('board.forum.new') }}</span>
+              <span v-if="thread.isLocked" class="forum-lock-badge" :title="t('board.forum.locked')">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
               </span>
               <h3 class="forum-thread-title">{{ thread.title }}</h3>
             </div>
             <p class="forum-thread-meta">
-              by <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || 'unknown' }}</span>
+              {{ t('board.forum.by') }} <span class="forum-thread-author">{{ thread.creator?.displayName || thread.creator?.name || t('board.forum.unknown') }}</span>
               &middot;
               <time :datetime="thread.createdAt" :title="thread.createdAt">{{ formatDate(thread.createdAt) }}</time>
             </p>
@@ -241,7 +242,7 @@ function getLastReply (threadId: string) {
           </div>
           <div class="forum-thread-stats">
             <span class="forum-stat-number">{{ thread.commentCount }}</span>
-            <span class="forum-stat-label">{{ thread.commentCount === 1 ? 'reply' : 'replies' }}</span>
+            <span class="forum-stat-label">{{ thread.commentCount === 1 ? t('board.forum.reply') : t('board.forum.repliesPlural') }}</span>
           </div>
           <div class="forum-thread-last-post">
             <template v-if="getLastReply(thread.id)">

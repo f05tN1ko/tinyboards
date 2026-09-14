@@ -3,6 +3,8 @@ import { useGraphQL } from '~/composables/useGraphQL'
 import type { Post, Comment } from '~/types/generated'
 import { timeAgo } from '~/utils/date'
 
+const { t } = useI18n()
+
 const route = useRoute()
 const username = computed(() => route.params.username as string)
 
@@ -63,6 +65,12 @@ async function loadContent (name: string): Promise<void> {
 
 watch(username, (name) => { loadContent(name) })
 await loadContent(username.value)
+
+const tabButtons = computed(() => [
+  { value: 'overview', label: t('profile.all') },
+  { value: 'posts', label: t('profile.tabs.posts') },
+  { value: 'comments', label: t('profile.tabs.comments') },
+] as const)
 </script>
 
 <template>
@@ -70,25 +78,13 @@ await loadContent(username.value)
     <!-- Content type filter for overview -->
     <div class="flex gap-1 mb-4">
       <button
+        v-for="tab in tabButtons"
+        :key="tab.value"
         class="px-3 py-1.5 text-xs font-medium rounded-full transition-colors"
-        :class="activeTab === 'overview' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-        @click="activeTab = 'overview'"
+        :class="activeTab === tab.value ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+        @click="activeTab = tab.value"
       >
-        All
-      </button>
-      <button
-        class="px-3 py-1.5 text-xs font-medium rounded-full transition-colors"
-        :class="activeTab === 'posts' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-        @click="activeTab = 'posts'"
-      >
-        Posts
-      </button>
-      <button
-        class="px-3 py-1.5 text-xs font-medium rounded-full transition-colors"
-        :class="activeTab === 'comments' ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
-        @click="activeTab = 'comments'"
-      >
-        Comments
+        {{ tab.label }}
       </button>
     </div>
 
@@ -96,15 +92,15 @@ await loadContent(username.value)
     <template v-if="activeTab === 'overview' || activeTab === 'posts'">
       <div v-if="activeTab === 'overview'" class="bg-white rounded-lg border border-gray-200 px-4 py-2.5 mb-3">
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-700">Recent Posts</h3>
+          <h3 class="text-sm font-semibold text-gray-700">{{ $t('profile.recentPosts') }}</h3>
           <NuxtLink :to="`/@${username}/posts`" class="text-xs text-primary hover:text-primary-hover no-underline">
-            View all
+            {{ $t('profile.viewAll') }}
           </NuxtLink>
         </div>
       </div>
       <PostList :posts="recentPosts" :loading="postsLoading" />
       <div v-if="!postsLoading && recentPosts.length === 0" class="bg-white rounded-lg border border-gray-200 py-8 text-center mb-4">
-        <p class="text-sm text-gray-500">No posts yet.</p>
+        <p class="text-sm text-gray-500">{{ $t('profile.noPosts') }}</p>
       </div>
     </template>
 
@@ -112,9 +108,9 @@ await loadContent(username.value)
     <template v-if="activeTab === 'overview' || activeTab === 'comments'">
       <div v-if="activeTab === 'overview'" class="bg-white rounded-lg border border-gray-200 px-4 py-2.5 mb-3 mt-4">
         <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-gray-700">Recent Comments</h3>
+          <h3 class="text-sm font-semibold text-gray-700">{{ $t('profile.recentComments') }}</h3>
           <NuxtLink :to="`/@${username}/comments`" class="text-xs text-primary hover:text-primary-hover no-underline">
-            View all
+            {{ $t('profile.viewAll') }}
           </NuxtLink>
         </div>
       </div>
@@ -130,7 +126,7 @@ await loadContent(username.value)
             <svg class="w-3.5 h-3.5 text-gray-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
             </svg>
-            <span class="text-gray-400">commented on</span>
+            <span class="text-gray-400">{{ $t('profile.commentedOn') }}</span>
             <NuxtLink
               v-if="comment.post"
               :to="`/b/${comment.post.board?.name || comment.board?.name || 'unknown'}/${comment.postId}/${comment.post.slug || ''}`"
@@ -138,7 +134,7 @@ await loadContent(username.value)
             >
               {{ comment.post.title }}
             </NuxtLink>
-            <span v-if="comment.board || comment.post?.board" class="text-gray-400 shrink-0">in</span>
+            <span v-if="comment.board || comment.post?.board" class="text-gray-400 shrink-0">{{ $t('profile.in') }}</span>
             <NuxtLink
               v-if="comment.board || comment.post?.board"
               :to="`/b/${comment.post?.board?.name || comment.board?.name}`"
@@ -154,7 +150,7 @@ await loadContent(username.value)
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
                 </svg>
-                {{ comment.score }} {{ comment.score === 1 ? 'point' : 'points' }}
+                {{ t('profile.pointCount', comment.score) }}
               </span>
               <span>&middot;</span>
               <time :datetime="comment.createdAt" :title="comment.createdAt">{{ timeAgo(comment.createdAt) }}</time>
@@ -164,7 +160,7 @@ await loadContent(username.value)
         </div>
       </div>
       <div v-else-if="!commentsLoading" class="bg-white rounded-lg border border-gray-200 py-8 text-center">
-        <p class="text-sm text-gray-500">No comments yet.</p>
+        <p class="text-sm text-gray-500">{{ $t('profile.noComments') }}</p>
       </div>
     </template>
   </div>

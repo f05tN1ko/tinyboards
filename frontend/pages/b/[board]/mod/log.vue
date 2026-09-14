@@ -5,8 +5,9 @@ definePageMeta({ middleware: 'guards' })
 
 const route = useRoute()
 const boardName = route.params.board as string
+const { t } = useI18n()
 
-useHead({ title: `Mod Log - b/${boardName}` })
+useHead({ title: t('board.mod.logTitle', { board: boardName }) })
 
 interface ModerationLogEntry {
   id: string
@@ -102,19 +103,19 @@ async function changeFilter (filter: string) {
   await loadLog()
 }
 
-const actionTypes = [
-  { value: '', label: 'All' },
-  { value: 'ban_from_board', label: 'Board Bans' },
-  { value: 'unban_from_board', label: 'Board Unbans' },
-  { value: 'remove_post', label: 'Post Removals' },
-  { value: 'restore_post', label: 'Post Restorations' },
-  { value: 'remove_comment', label: 'Comment Removals' },
-  { value: 'restore_comment', label: 'Comment Restorations' },
-  { value: 'lock_post', label: 'Post Locks' },
-  { value: 'feature_post', label: 'Featured Posts' },
-  { value: 'add_mod', label: 'Mod Added' },
-  { value: 'remove_mod', label: 'Mod Removed' },
-]
+const actionTypes = computed(() => [
+  { value: '', label: t('board.mod.all') },
+  { value: 'ban_from_board', label: t('board.mod.boardBans') },
+  { value: 'unban_from_board', label: t('board.mod.boardUnbans') },
+  { value: 'remove_post', label: t('board.mod.postRemovals') },
+  { value: 'restore_post', label: t('board.mod.postRestorations') },
+  { value: 'remove_comment', label: t('board.mod.commentRemovals') },
+  { value: 'restore_comment', label: t('board.mod.commentRestorations') },
+  { value: 'lock_post', label: t('board.mod.postLocks') },
+  { value: 'feature_post', label: t('board.mod.featuredPosts') },
+  { value: 'add_mod', label: t('board.mod.modAdded') },
+  { value: 'remove_mod', label: t('board.mod.modRemoved') },
+])
 
 function formatAction (actionType: string): string {
   return actionType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -147,32 +148,32 @@ function actionBadgeClass (actionType: string): string {
     <nav class="text-sm text-gray-500 mb-2">
       <NuxtLink :to="`/b/${boardName}`" class="hover:text-primary no-underline">b/{{ boardName }}</NuxtLink>
       <span class="mx-1">/</span>
-      <span class="text-gray-700">Moderation</span>
+      <span class="text-gray-700">{{ $t('board.mod.moderation') }}</span>
     </nav>
 
     <!-- Header card with tabs -->
     <div class="bg-white rounded-lg border border-gray-200 mb-4 overflow-hidden">
       <div class="px-4 py-3 border-b border-gray-200">
-        <h1 class="text-lg font-semibold text-gray-900">Moderation Log</h1>
+        <h1 class="text-lg font-semibold text-gray-900">{{ $t('board.mod.logHeading') }}</h1>
       </div>
       <div class="px-4 flex gap-0.5 border-b border-gray-100">
         <NuxtLink
           :to="`/b/${boardName}/mod/queue`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Reports
+          {{ $t('board.mod.reports') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/log`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-primary text-primary"
         >
-          Mod Log
+          {{ $t('board.mod.modLog') }}
         </NuxtLink>
         <NuxtLink
           :to="`/b/${boardName}/mod/bans`"
           class="px-3 py-2 text-sm font-medium no-underline border-b-2 -mb-px transition-colors border-transparent text-gray-500 hover:text-gray-700"
         >
-          Bans
+          {{ $t('board.mod.bans') }}
         </NuxtLink>
       </div>
     </div>
@@ -193,7 +194,7 @@ function actionBadgeClass (actionType: string): string {
     <CommonLoadingSpinner v-if="loading" />
 
     <div v-else-if="entries.length === 0" class="text-center py-12">
-      <p class="text-sm text-gray-500">No moderation actions recorded.</p>
+      <p class="text-sm text-gray-500">{{ $t('board.mod.noActions') }}</p>
     </div>
 
     <div v-else class="space-y-3">
@@ -214,10 +215,10 @@ function actionBadgeClass (actionType: string): string {
               <span class="text-xs text-gray-500">{{ entry.targetType }}</span>
             </div>
             <p class="text-sm text-gray-900">
-              by <span class="font-medium">{{ entry.moderatorName }}</span>
+              {{ $t('board.mod.by') }} <span class="font-medium">{{ entry.moderatorName }}</span>
             </p>
             <p v-if="entry.reason" class="text-sm text-gray-600 mt-0.5">
-              Reason: {{ entry.reason }}
+              {{ $t('board.mod.reasonLabel', { reason: entry.reason }) }}
             </p>
           </div>
           <span class="text-xs text-gray-500 flex-shrink-0">
